@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">IBM IoT for Automotive - Mobility Starter Application</string>
+    <string name="title_activity_analyze_my_driving">Map</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="title_activity_tab_acitivity">tabAcitivity</string>
+    <string name="action_settings">Settings</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+    <string name="title_activity_trip_details">Map</string>
+</resources>

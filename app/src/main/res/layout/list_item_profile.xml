@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Harsh Breaking"
+        android:id="@+id/behaviorTitle"
+        android:textColor="@color/primary_material_light"
+        android:textSize="17dp"
+        android:layout_marginLeft="20dp"
+        android:layout_below="@+id/sectionTitle"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="151"
+        android:id="@+id/behaviorOccurences"
+        android:paddingLeft="10dp"
+        android:textColor="#000"
+        android:textIsSelectable="false"
+        android:textSize="15sp"
+        android:layout_alignBottom="@+id/behaviorTitle"
+        android:layout_alignParentEnd="true"
+        android:layout_marginRight="20dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Behaviors"
+        android:id="@+id/sectionTitle"
+        android:textColor="@color/primary_material_light"
+        android:textSize="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginBottom="10dp"
+        android:textStyle="bold"
+        android:layout_marginTop="20dp" />
+
+</RelativeLayout>

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Home.CarDetails"
+    android:padding="0dp"
+    android:background="#fff">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:layout_width="fill_parent"
+            android:layout_height="220dp"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            android:id="@+id/carThumbnail"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:src="@drawable/models"
+            android:background="#000" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_alignBottom="@+id/carThumbnail"
+            android:layout_alignStart="@+id/carThumbnail"
+            android:background="#d2000000"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="Medium Text"
+                android:id="@+id/behaviorTitle"
+                android:layout_centerVertical="true"
+                android:textColor="#fff"
+                android:textSize="21dp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="Medium Text"
+                android:id="@+id/carStars"
+                android:textColor="@color/colorAccent"
+                android:layout_centerVertical="true"
+                android:layout_alignParentEnd="true"
+                android:textSize="21dp" />
+        </RelativeLayout>
+
+        <ListView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/listView"
+            android:layout_weight="5"
+            android:background="@android:color/white"
+            android:listSelector="@android:color/transparent"
+            android:cacheColorHint="@android:color/transparent"
+            android:divider="@android:color/transparent"
+            android:layout_below="@+id/carThumbnail"
+            android:layout_centerHorizontal="true"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp" />
+
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="50dp"
+            android:text="Confirm"
+            android:id="@+id/button3"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/listView"
+            android:textColor="@color/abc_primary_text_disable_only_material_dark"
+            android:backgroundTint="@color/accent_material_light_1"
+            android:layout_margin="10dp"
+            android:onClick="reserveCarAction" />
+    </LinearLayout>
+
+</RelativeLayout>

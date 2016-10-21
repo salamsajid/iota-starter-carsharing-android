@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Location:"
+        android:id="@+id/behaviorTitle"
+        android:textColor="#000"
+        android:textSize="17dp"
+        android:paddingTop="7dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Pickup:"
+        android:id="@+id/fromTitle"
+        android:textColor="#000"
+        android:textSize="17dp"
+        android:paddingTop="15dp"
+        android:layout_below="@+id/behaviorTitle"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Dropoff:"
+        android:id="@+id/plateTitle"
+        android:textColor="#000"
+        android:textSize="17dp"
+        android:paddingTop="15dp"
+        android:layout_below="@+id/fromTitle"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Location Address"
+        android:id="@+id/locationAddress"
+        android:textSize="15dp"
+        android:paddingTop="7dp"
+        android:autoLink = "map"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:linksClickable="false"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textIsSelectable="false"
+        android:layout_marginTop="2dp" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="date"
+        android:ems="10"
+        android:id="@+id/pickupTime"
+        android:layout_below="@+id/behaviorTitle"
+        android:layout_alignParentEnd="true"
+        android:paddingTop="15dp"
+        android:textSize="17dp"
+        android:textIsSelectable="true"
+        android:linksClickable="false"
+        android:text="Pickup Time"
+        android:textAlignment="textEnd"
+        android:layout_marginRight="0dp"
+        android:outlineProvider="bounds" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="date"
+        android:ems="10"
+        android:id="@+id/dropoffTime"
+        android:paddingTop="7dp"
+        android:textSize="17dp"
+        android:textIsSelectable="true"
+        android:linksClickable="false"
+        android:text="Dropoff Time"
+        android:textAlignment="textEnd"
+        android:layout_below="@+id/pickupTime"
+        android:layout_alignParentEnd="true"
+        android:layout_marginRight="0dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="5 Hours"
+        android:id="@+id/hourDifference"
+        android:textColor="#000"
+        android:textSize="17dp"
+        android:paddingTop="15dp"
+        android:layout_below="@+id/dropoffTime"
+        android:layout_alignParentEnd="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Est. Cost:"
+        android:id="@+id/costTitle"
+        android:textColor="#000"
+        android:textSize="17dp"
+        android:paddingTop="15dp"
+        android:layout_below="@+id/hourDifference"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="$75"
+        android:id="@+id/estCost"
+        android:textColor="#000"
+        android:textSize="17dp"
+        android:paddingTop="15dp"
+        android:layout_below="@+id/hourDifference"
+        android:layout_alignEnd="@+id/hourDifference" />
+
+</RelativeLayout>

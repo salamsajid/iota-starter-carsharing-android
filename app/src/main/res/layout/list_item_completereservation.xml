@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Pickup:"
+        android:id="@+id/behaviorTitle"
+        android:textColor="#000"
+        android:textSize="17dp"
+        android:paddingTop="7dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="05/18/16, 5:52 PM"
+        android:id="@+id/pickupValue"
+        android:textColor="#000"
+        android:textSize="17dp"
+        android:layout_alignParentEnd="true"
+        android:paddingTop="7dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="From"
+        android:id="@+id/fromTitle"
+        android:textColor="#000"
+        android:textSize="17dp"
+        android:paddingTop="7dp"
+        android:layout_below="@+id/behaviorTitle"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Yonge and Finch Ave."
+        android:id="@+id/fromValue"
+        android:textColor="#000"
+        android:textSize="17dp"
+        android:paddingTop="7dp"
+        android:layout_below="@+id/behaviorTitle"
+        android:layout_alignParentEnd="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Plate #:"
+        android:id="@+id/plateTitle"
+        android:textColor="#000"
+        android:textSize="17dp"
+        android:paddingTop="7dp"
+        android:layout_below="@+id/fromTitle"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="257-GBJ"
+        android:id="@+id/plateValue"
+        android:textColor="#000"
+        android:textSize="17dp"
+        android:paddingTop="7dp"
+        android:layout_alignTop="@+id/plateTitle"
+        android:layout_alignParentEnd="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Bill:"
+        android:id="@+id/billTitle"
+        android:textColor="#000"
+        android:textSize="17dp"
+        android:paddingTop="7dp"
+        android:layout_below="@+id/plateTitle"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="$270"
+        android:id="@+id/billValue"
+        android:textColor="#000"
+        android:textSize="17dp"
+        android:paddingTop="7dp"
+        android:layout_alignTop="@+id/billTitle"
+        android:layout_alignParentEnd="true" />
+
+</RelativeLayout>

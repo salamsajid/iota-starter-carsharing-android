@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:layout_width="100dp"
+        android:layout_height="75dp"
+        android:id="@+id/carThumbnail"
+        android:layout_centerVertical="true"
+        android:layout_alignParentStart="true"
+        android:src="@drawable/models"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="10dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Michael Hall Car"
+        android:id="@+id/carTitle"
+        android:layout_alignTop="@+id/carThumbnail"
+        android:layout_toEndOf="@+id/carThumbnail"
+        android:textColor="@color/primary_material_light"
+        android:textStyle="bold"
+        android:textSize="20sp"
+        android:paddingLeft="10dp"
+        android:layout_marginBottom="3dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="425 meters away"
+        android:id="@+id/dateAndTime"
+        android:paddingLeft="10dp"
+        android:layout_below="@+id/carTitle"
+        android:layout_alignLeft="@+id/carTitle"
+        android:layout_marginBottom="3dp"
+        android:textColor="@color/abc_secondary_text_material_light" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="★ ★ ★ ★ ★ "
+        android:id="@+id/carStars"
+        android:paddingLeft="10dp"
+        android:textColor="#f37636"
+        android:layout_below="@+id/dateAndTime"
+        android:layout_alignLeft="@+id/dateAndTime" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="$18/hr, $44/day"
+        android:id="@+id/carPrice"
+        android:paddingLeft="10dp"
+        android:textColor="#000"
+        android:layout_below="@+id/dateAndTime"
+        android:layout_alignParentEnd="true"
+        android:layout_marginRight="10dp"
+        android:textIsSelectable="false"
+        android:textSize="15sp" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/carRecommended"
+        android:layout_alignTop="@+id/carTitle"
+        android:layout_alignEnd="@+id/carPrice"
+        android:src="@drawable/recommended"
+        android:layout_marginStart="85dp"
+        android:layout_marginBottom="15dp"
+        android:layout_marginTop="6dp"
+        android:layout_alignBottom="@+id/dateAndTime"
+        android:layout_alignStart="@+id/carPrice" />
+</RelativeLayout>
