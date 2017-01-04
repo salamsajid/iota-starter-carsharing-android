@@ -134,7 +134,7 @@ public class LoggerFactory {
 			// available.
 			Class logManagerClass = Class.forName("java.util.logging.LogManager");
 			Method m1 = logManagerClass.getMethod("getLogManager", new Class[]{});
-			Object logManagerInstance = m1.invoke(null, null);
+			Object logManagerInstance = m1.invoke(null);
 			Method m2 = logManagerClass.getMethod("getProperty", new Class[]{String.class});
 			result = (String)m2.invoke(logManagerInstance,new Object[]{name});
 		} catch(Exception e) {

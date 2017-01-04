@@ -39,8 +39,12 @@ public class CarData implements Serializable {
 
         name = carData.getString("name");
 
-        status = carData.getString("status");
-        distance = carData.getInt("distance");
+        if (carData.has("status")) {
+            status = carData.getString("status");
+        }
+        if (carData.has("distance")) {
+            distance = carData.getInt("distance");
+        }
 
         if (carData.has("license")) {
             license = carData.getString("license");
@@ -58,8 +62,12 @@ public class CarData implements Serializable {
             hourlyRate = model.getInt("hourlyRate");
             dailyRate = model.getInt("dailyRate");
             thumbnailURL = model.getString("thumbnailURL");
-            type = model.getString("type");
-            drive = model.getString("drive");
+            if(model.has("type")) {
+                type = model.getString("type");
+            }
+            if(model.has("drive")) {
+                drive = model.getString("drive");
+            }
         }
 
 //        if let recommendation = dictionary["recommendation"] {

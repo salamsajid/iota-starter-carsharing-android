@@ -31,7 +31,9 @@ Before you deploy the IoT for Automotive - Mobility Starter Application mobile a
 
 ## Deploying the mobile app
 
-To deploy the IoT for Automotive - Mobility Starter Application mobile app for Android, complete the following steps:
+You can download and install the mobile app on iOS and Android mobile devices. For more information about trying the iOS version of the mobile app, see [IBM IoT for Automotive - Mobility Starter Application mobile app for iOS](https://github.com/ibm-watson-iot/iota-starter-carsharing).
+
+To try the IoT for Automotive - Mobility Starter Application mobile app for Android with Android Emulator, complete the following steps:
 
 1. Clone the Mobility Starter Application source code repository for the sample mobile app by using the following git command:    
 
@@ -41,20 +43,22 @@ To deploy the IoT for Automotive - Mobility Starter Application mobile app for A
 
     If you encounter the following dialog, press 'OK'.    
      
-    ![](GradleSync.jpg)    
+    ![Gradle Sync Dialog](GradleSync.jpg)    
      
     If you encounter the following dialog, do NOT 'Update'.    
  
-    ![](GradlePluginUpdate.jpg)    
+    ![Gradle Plugin Update Dialog](GradlePluginUpdate.jpg)    
 
 3. Edit the **iota-starter-carsharing-android/app/java/carsharing.starter.automotive.iot.ibm.com.mobilestarterapp/ConnectedDriverAPI/API.java** file, and set the `connectedAppURL` variable to the URL for your IoT for Automotive - Mobility Starter Application server app.
 4. Edit the **iota-starter-carsharing-android/app/res/values/google_maps_api.xml** file and replace `YOUR_KEY_HERE` with your `google_maps_key`. For more information, see [Get API Key](https://developers.google.com/maps/documentation/android-api/signup).
 
 5. In Android Studio, run the application by pressing **Run 'app'**.
 
-    If you use a virtual device, make sure you use one with API level 21.
+    If you use a virtual device, make sure that you use one with API level 21 as seen in the following dialog.
 
-    ![](DeploymentTarget.jpg)
+    ![Deployment Target](DeploymentTarget.jpg)
+
+6. To deploy the mobile app on your device, see [Build and Run Your App](https://developer.android.com/studio/run/index.html).
 
 ## Reporting defects
 To report a defect with the IoT for Automotive - Mobility Starter Application mobile app, go to the [Issues](https://github.com/ibm-watson-iot/iota-starter-carsharing-android/issues) section.

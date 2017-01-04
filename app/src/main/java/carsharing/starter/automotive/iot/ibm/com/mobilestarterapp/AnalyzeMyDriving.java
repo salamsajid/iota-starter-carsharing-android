@@ -614,7 +614,13 @@ public class AnalyzeMyDriving extends Fragment implements OnMapReadyCallback, Lo
                             startedDriving = true;
                             reservationId[0] = result.getJSONObject(0).getString("reservationId");
                             Reservations.userReserved = true;
-
+                            try {
+                                sendLocation(locationManager.getLastKnownLocation(provider));
+                            } catch (MqttException e) {
+                                e.printStackTrace();
+                            } catch (SecurityException e) {
+                                e.printStackTrace();
+                            }
                             break;
                         case 409:
                             ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Car already taken");
