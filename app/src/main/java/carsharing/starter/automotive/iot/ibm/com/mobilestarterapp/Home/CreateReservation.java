@@ -11,11 +11,10 @@ package carsharing.starter.automotive.iot.ibm.com.mobilestarterapp.Home;
 
 import android.content.Intent;
 import android.net.Uri;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -53,20 +52,20 @@ public class CreateReservation extends AppCompatActivity {
             carData = (CarData) getIntent().getSerializableExtra("carData");
             formattedAddress = getIntent().getStringExtra("formattedAddress");
 
-            ImageView carThumbnailImageView = (ImageView) findViewById(R.id.carThumbnail);
-            TextView carTitleTextView = (TextView) findViewById(R.id.behaviorTitle);
-            TextView carStarsTextView = (TextView) findViewById(R.id.carStars);
+            final ImageView carThumbnailImageView = (ImageView) findViewById(R.id.carThumbnail);
+            final TextView carTitleTextView = (TextView) findViewById(R.id.behaviorTitle);
+            final TextView carStarsTextView = (TextView) findViewById(R.id.carStars);
 
             Picasso.with(getApplicationContext()).load(carData.thumbnailURL).placeholder(R.drawable.models).into(carThumbnailImageView);
 
             carTitleTextView.setText(carData.title);
-            String stars = new String(new char[carData.stars]).replace("\0", "\u2605");
-            String emptyStars = new String(new char[5 - carData.stars]).replace("\0", "\u2606");
+            final String stars = new String(new char[carData.stars]).replace("\0", "\u2605");
+            final String emptyStars = new String(new char[5 - carData.stars]).replace("\0", "\u2606");
             carStarsTextView.setText(stars + emptyStars);
 
-            ListView listView = (ListView) findViewById(R.id.listView);
+            final ListView listView = (ListView) findViewById(R.id.listView);
 
-            CreateReservationAdapter adapter = new CreateReservationAdapter(this, carData, formattedAddress);
+            final CreateReservationAdapter adapter = new CreateReservationAdapter(this, carData, formattedAddress);
             listView.setAdapter(adapter);
         }
     }
@@ -81,28 +80,28 @@ public class CreateReservation extends AppCompatActivity {
     public void reserveCarAction(View view) {
         final View v = view;
 
-        String url = API.reservation;
+        final String url = API.reservation;
 
-        Uri.Builder builder = new Uri.Builder()
+        final Uri.Builder builder = new Uri.Builder()
                 .appendQueryParameter("carId", carData.deviceID)
                 .appendQueryParameter("pickupTime", CreateReservationAdapter.pickupCal[0].getTimeInMillis() + "")
                 .appendQueryParameter("dropOffTime", CreateReservationAdapter.dropoffCal[0].getTimeInMillis() + "");
 
-        String query = builder.build().getEncodedQuery();
+        final String query = builder.build().getEncodedQuery();
 
         try {
-            API.doRequest task = new API.doRequest(new API.doRequest.TaskListener() {
+            final API.doRequest task = new API.doRequest(new API.doRequest.TaskListener() {
                 @Override
                 public void postExecute(JSONArray result) throws JSONException {
                     result.remove(result.length() - 1);
 
                     if (result.getJSONObject(0).has("reservationId")) {
-                        Toast toast = Toast.makeText(getApplicationContext(), "Car Successfully Reserved!", Toast.LENGTH_SHORT);
+                        final Toast toast = Toast.makeText(getApplicationContext(), "Car Successfully Reserved!", Toast.LENGTH_SHORT);
                         toast.show();
 
                         Reservations.userReserved = true;
 
-                        Intent tabActivity = new Intent(v.getContext(), tabNavigation.class);
+                        final Intent tabActivity = new Intent(v.getContext(), tabNavigation.class);
                         startActivity(tabActivity);
                     }
 

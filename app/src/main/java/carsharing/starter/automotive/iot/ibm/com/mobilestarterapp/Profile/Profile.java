@@ -1,16 +1,17 @@
 /**
  * Copyright 2016 IBM Corp. All Rights Reserved.
- *
+ * <p>
  * Licensed under the IBM License, a copy of which may be obtained at:
- *
+ * <p>
  * http://www14.software.ibm.com/cgi-bin/weblap/lap.pl?li_formnum=L-DDIN-AEGGZJ&popup=y&title=IBM%20IoT%20for%20Automotive%20Sample%20Starter%20Apps%20%28Android-Mobile%20and%20Server-all%29
- *
+ * <p>
  * You may not use this file except in compliance with the license.
  */
 package carsharing.starter.automotive.iot.ibm.com.mobilestarterapp.Profile;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -47,28 +48,33 @@ public class Profile extends Fragment {
                              Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.activity_reservations, container, false);
 
-        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("Fetching Profile...");
-
-        getDriverStats();
+        final FragmentActivity activity = getActivity();
+        ((AppCompatActivity) activity).getSupportActionBar().setTitle("Fetching your profile...");
+        API.runInAsyncUIThread(new Runnable() {
+            @Override
+            public void run() {
+                getDriverStats();
+            }
+        }, activity);
 
         return view;
     }
 
     private void getDriverStats() {
-        String url = API.driverStats;
+        final String url = API.driverStats;
 
         try {
-            API.doRequest task = new API.doRequest(new API.doRequest.TaskListener() {
+            final API.doRequest task = new API.doRequest(new API.doRequest.TaskListener() {
                 @Override
                 public void postExecute(JSONArray result) throws JSONException {
                     result.remove(result.length() - 1);
 
-                    ListView listView = (ListView) view.findViewById(R.id.listView);
+                    final ListView listView = (ListView) view.findViewById(R.id.listView);
 
-                    ArrayList<DriverStatistics> stats = new ArrayList<DriverStatistics>();
+                    final ArrayList<DriverStatistics> stats = new ArrayList<DriverStatistics>();
 
-                    for (int i=0; i < result.length(); i++) {
-                        DriverStatistics tempDriverStatistics = new DriverStatistics(result.getJSONObject(i));
+                    for (int i = 0; i < result.length(); i++) {
+                        final DriverStatistics tempDriverStatistics = new DriverStatistics(result.getJSONObject(i));
                         stats.add(tempDriverStatistics);
                     }
 
@@ -77,7 +83,8 @@ public class Profile extends Fragment {
                         behaviors = stat.scoring.getScoringBehaviors();
 
                         Collections.sort(behaviors, new Comparator<ScoringBehavior>() {
-                            @Override public int compare(ScoringBehavior b1, ScoringBehavior b2) {
+                            @Override
+                            public int compare(ScoringBehavior b1, ScoringBehavior b2) {
                                 return b2.count - b1.count;
                             }
                         });
@@ -91,12 +98,12 @@ public class Profile extends Fragment {
                         trafficConditions = stat.speedPattern;
                         trafficConditions.toDictionary();
 
-                        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("Your score is " + Math.round(stat.scoring.score) + "% for " + Math.round(stat.totalDistance/16.09344)/100 + " miles.");
+                        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Your score is " + Math.round(stat.scoring.score) + "% for " + Math.round(stat.totalDistance / 16.09344) / 100 + " miles.");
 
-                        ProfileDataAdapter adapter = new ProfileDataAdapter(getActivity().getApplicationContext(), stats, behaviors, timesOfDay, trafficConditions, roadTypes);
+                        final ProfileDataAdapter adapter = new ProfileDataAdapter(getActivity().getApplicationContext(), stats, behaviors, timesOfDay, trafficConditions, roadTypes);
                         listView.setAdapter(adapter);
                     } else {
-                        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("You have no trips.");
+                        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("You have no analyzed trips.");
                     }
 
                     Log.i("Profile Data", result.toString());

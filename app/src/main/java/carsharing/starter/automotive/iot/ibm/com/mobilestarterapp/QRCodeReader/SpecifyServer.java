@@ -9,26 +9,26 @@
  */
 package carsharing.starter.automotive.iot.ibm.com.mobilestarterapp.QRCodeReader;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.Uri;
+import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.View;
+import android.widget.Toast;
+
 import carsharing.starter.automotive.iot.ibm.com.mobilestarterapp.ConnectedDriverAPI.API;
 import carsharing.starter.automotive.iot.ibm.com.mobilestarterapp.FirstPage;
 import carsharing.starter.automotive.iot.ibm.com.mobilestarterapp.R;
 import carsharing.starter.automotive.iot.ibm.com.mobilestarterapp.tabNavigation;
 
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.net.Uri;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
-import android.widget.Toast;
-
 public class SpecifyServer extends AppCompatActivity {
     public static SharedPreferences sharedpreferences;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_specify_server);
 
@@ -43,36 +43,36 @@ public class SpecifyServer extends AppCompatActivity {
         return true;
     }
 
-    public void openScanner(View view) {
-        IntentIntegrator integrator = new IntentIntegrator(this);
+    public void openScanner(final View view) {
+        final IntentIntegrator integrator = new IntentIntegrator(this);
         integrator.initiateScan();
     }
 
     public void useDefaultServer(View view) {
         Log.i("Button Clicked", "Default Server");
 
-        Intent intent = new Intent(this, tabNavigation.class);
+        final Intent intent = new Intent(this, tabNavigation.class);
         startActivity(intent);
     }
 
     public void moreInfo(View view) {
         Log.i("Button Pressed", "More Info");
 
-        Uri webpage = Uri.parse("http://www.ibm.com/internet-of-things/iot-industry/iot-automotive/");
-        Intent intent = new Intent(Intent.ACTION_VIEW, webpage);
+        final Uri webpage = Uri.parse("http://www.ibm.com/internet-of-things/iot-industry/iot-automotive/");
+        final Intent intent = new Intent(Intent.ACTION_VIEW, webpage);
 
         if (intent.resolveActivity(getPackageManager()) != null) {
             startActivity(intent);
         }
     }
 
-    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
+    public void onActivityResult(final int requestCode, final int resultCode, final Intent intent) {
+        final IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
         if (scanResult != null) {
             if (scanResult.getContents() != null) {
                 Log.d("RESULT", scanResult.toString());
 
-                String[] fullString = scanResult.getContents().split(",");
+                final String[] fullString = scanResult.getContents().split(",");
 
                 if (fullString[0].equals("1")) {
                     String appRoute;
@@ -111,10 +111,10 @@ public class SpecifyServer extends AppCompatActivity {
 
                 API.doInitialize();
 
-                Toast toast = Toast.makeText(getApplicationContext(), "Changed were successfully applied!", Toast.LENGTH_SHORT);
+                final Toast toast = Toast.makeText(getApplicationContext(), "Changed were successfully applied!", Toast.LENGTH_SHORT);
                 toast.show();
 
-                Intent firstPage = new Intent(this, FirstPage.class);
+                final Intent firstPage = new Intent(this, FirstPage.class);
                 startActivity(firstPage);
             } else {
                 Log.e("RESULT", "Failed");
@@ -122,16 +122,16 @@ public class SpecifyServer extends AppCompatActivity {
         }
     }
 
-    public void setSharedpreferences(String key, String value) {
+    public void setSharedpreferences(final String key, final String value) {
         sharedpreferences = getApplicationContext().getSharedPreferences("carsharing.starter.automotive.iot.ibm.com.mobilestarterapp.ConnectedDriverAPI", Context.MODE_PRIVATE);
         sharedpreferences.edit().putString(key, value).apply();
 
-        String newValue = sharedpreferences.getString(key, "no" + key);
+        final String newValue = sharedpreferences.getString(key, "no" + key);
 
         Log.i(key + " changed to", newValue);
     }
 
-    public void removeSharedpreferences(String key) {
+    public void removeSharedpreferences(final String key) {
         sharedpreferences = getApplicationContext().getSharedPreferences("carsharing.starter.automotive.iot.ibm.com.mobilestarterapp.ConnectedDriverAPI", Context.MODE_PRIVATE);
         sharedpreferences.edit().remove(key);
 

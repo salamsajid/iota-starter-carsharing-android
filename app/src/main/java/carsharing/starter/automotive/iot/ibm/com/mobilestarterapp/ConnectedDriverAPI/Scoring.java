@@ -1,10 +1,10 @@
 /**
  * Copyright 2016 IBM Corp. All Rights Reserved.
- *
+ * <p>
  * Licensed under the IBM License, a copy of which may be obtained at:
- *
+ * <p>
  * http://www14.software.ibm.com/cgi-bin/weblap/lap.pl?li_formnum=L-DDIN-AEGGZJ&popup=y&title=IBM%20IoT%20for%20Automotive%20Sample%20Starter%20Apps%20%28Android-Mobile%20and%20Server-all%29
- *
+ * <p>
  * You may not use this file except in compliance with the license.
  */
 package carsharing.starter.automotive.iot.ibm.com.mobilestarterapp.ConnectedDriverAPI;
@@ -16,79 +16,49 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 public class Scoring implements Serializable {
-    public String freqStop_key = "Frequent stops";
-    public String harshBrake_key = "Harsh braking";
-    public String overSpeed_key = "Speeding";
-    public String freqAcceleration_key = "Frequent acceleration";
-    public String anxiousAcceleration_key = "Harsh acceleration";
-    public String freqBrake_key = "Frequent braking";
-    public String tiredDriving_key = "Fatigued driving";
-    public String accBefTurn_key = "Acceleration before turn";
-    public String brakeOutTurn_key = "Over-braking before exiting turn";
-    public String sharpTurn_key = "Sharp turn";
+    public final String freqStop_key = "Frequent stops";
+    public final String harshBrake_key = "Harsh braking";
+    public final String overSpeed_key = "Speeding";
+    public final String freqAcceleration_key = "Frequent acceleration";
+    public final String anxiousAcceleration_key = "Harsh acceleration";
+    public final String freqBrake_key = "Frequent braking";
+    public final String tiredDriving_key = "Fatigued driving";
+    public final String accBefTurn_key = "Acceleration before turn";
+    public final String brakeOutTurn_key = "Over-braking before exiting turn";
+    public final String sharpTurn_key = "Sharp turn";
 
 
-    public int totalTime;
-    public Double score;
+    public final int totalTime;
+    public final Double score;
 
-    public ScoringBehavior freqStop;
-    public ScoringBehavior harshBrake;
-    public ScoringBehavior overSpeed;
-    public ScoringBehavior freqAcceleration;
-    public ScoringBehavior anxiousAcceleration;
-    public ScoringBehavior freqBrake;
-    public ScoringBehavior tiredDriving;
-    public ScoringBehavior accBefTurn;
-    public ScoringBehavior brakeOutTurn;
-    public ScoringBehavior sharpTurn;
+    public final ScoringBehavior freqStop;
+    public final ScoringBehavior harshBrake;
+    public final ScoringBehavior overSpeed;
+    public final ScoringBehavior freqAcceleration;
+    public final ScoringBehavior anxiousAcceleration;
+    public final ScoringBehavior freqBrake;
+    public final ScoringBehavior tiredDriving;
+    public final ScoringBehavior accBefTurn;
+    public final ScoringBehavior brakeOutTurn;
+    public final ScoringBehavior sharpTurn;
 
-    public Scoring(JSONObject scoringData) throws JSONException {
+    public Scoring(final JSONObject scoringData) throws JSONException {
         totalTime = scoringData.getInt("totalTime");
         score = scoringData.getDouble("score");
-
-        if (scoringData.has(freqStop_key)) {
-            freqStop = new ScoringBehavior(scoringData.getJSONObject(freqStop_key), freqStop_key);
-        }
-
-        if (scoringData.has(harshBrake_key)) {
-            harshBrake = new ScoringBehavior(scoringData.getJSONObject(harshBrake_key), harshBrake_key);
-        }
-
-        if (scoringData.has(overSpeed_key)) {
-            overSpeed = new ScoringBehavior(scoringData.getJSONObject(overSpeed_key), overSpeed_key);
-        }
-
-        if (scoringData.has(freqAcceleration_key)) {
-            freqAcceleration = new ScoringBehavior(scoringData.getJSONObject(freqAcceleration_key), freqAcceleration_key);
-        }
-
-        if (scoringData.has(anxiousAcceleration_key)) {
-            anxiousAcceleration = new ScoringBehavior(scoringData.getJSONObject(anxiousAcceleration_key), anxiousAcceleration_key);
-        }
-
-        if (scoringData.has(freqBrake_key)) {
-            freqBrake = new ScoringBehavior(scoringData.getJSONObject(freqBrake_key), freqBrake_key);
-        }
-
-        if (scoringData.has(tiredDriving_key)) {
-            tiredDriving = new ScoringBehavior(scoringData.getJSONObject(tiredDriving_key), tiredDriving_key);
-        }
-
-        if (scoringData.has(accBefTurn_key)) {
-            accBefTurn = new ScoringBehavior(scoringData.getJSONObject(accBefTurn_key), accBefTurn_key);
-        }
-
-        if (scoringData.has(brakeOutTurn_key)) {
-            brakeOutTurn = new ScoringBehavior(scoringData.getJSONObject(brakeOutTurn_key), brakeOutTurn_key);
-        }
-
-        if (scoringData.has(sharpTurn_key)) {
-            sharpTurn = new ScoringBehavior(scoringData.getJSONObject(sharpTurn_key), sharpTurn_key);
-        }
+        freqStop = scoringData.has(freqStop_key) ? new ScoringBehavior(scoringData.getJSONObject(freqStop_key), freqStop_key) : null;
+        harshBrake = scoringData.has(harshBrake_key) ? new ScoringBehavior(scoringData.getJSONObject(harshBrake_key), harshBrake_key) : null;
+        overSpeed = scoringData.has(overSpeed_key) ? new ScoringBehavior(scoringData.getJSONObject(overSpeed_key), overSpeed_key) : null;
+        freqAcceleration = scoringData.has(freqAcceleration_key) ? new ScoringBehavior(scoringData.getJSONObject(freqAcceleration_key), freqAcceleration_key) : null;
+        anxiousAcceleration = scoringData.has(anxiousAcceleration_key) ? new ScoringBehavior(scoringData.getJSONObject(anxiousAcceleration_key), anxiousAcceleration_key) : null;
+        freqBrake = scoringData.has(freqBrake_key) ? new ScoringBehavior(scoringData.getJSONObject(freqBrake_key), freqBrake_key) : null;
+        tiredDriving = scoringData.has(tiredDriving_key) ? new ScoringBehavior(scoringData.getJSONObject(tiredDriving_key), tiredDriving_key) : null;
+        accBefTurn = scoringData.has(accBefTurn_key) ? new ScoringBehavior(scoringData.getJSONObject(accBefTurn_key), accBefTurn_key) : null;
+        brakeOutTurn = scoringData.has(brakeOutTurn_key) ? new ScoringBehavior(scoringData.getJSONObject(brakeOutTurn_key), brakeOutTurn_key) : null;
+        sharpTurn = scoringData.has(sharpTurn_key) ? new ScoringBehavior(scoringData.getJSONObject(sharpTurn_key), sharpTurn_key) : null;
     }
 
     public ArrayList<ScoringBehavior> getScoringBehaviors() {
-        ArrayList<ScoringBehavior> returnArray = new ArrayList<ScoringBehavior>();
+        final ArrayList<ScoringBehavior> returnArray = new ArrayList<ScoringBehavior>();
 
         if (accBefTurn != null) {
             returnArray.add(accBefTurn);

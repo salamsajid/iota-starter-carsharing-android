@@ -10,19 +10,15 @@
 package carsharing.starter.automotive.iot.ibm.com.mobilestarterapp.Home;
 
 import android.content.Intent;
-import android.graphics.Paint;
 import android.location.Address;
 import android.location.Geocoder;
-import android.net.Uri;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
@@ -38,7 +34,7 @@ public class CarDetails extends AppCompatActivity {
     private String formattedAddress = "";
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_car_details);
 
@@ -46,25 +42,25 @@ public class CarDetails extends AppCompatActivity {
 
         getSupportActionBar().setTitle("Car Details");
 
-        Bundle extras = getIntent().getExtras();
+        final Bundle extras = getIntent().getExtras();
 
         if (extras != null) {
             carData = (CarData) getIntent().getSerializableExtra("carData");
 
-            ImageView carThumbnailImageView = (ImageView) findViewById(R.id.carThumbnail);
-            TextView carTitleTextView = (TextView) findViewById(R.id.behaviorTitle);
-            TextView carStarsTextView = (TextView) findViewById(R.id.carStars);
+            final ImageView carThumbnailImageView = (ImageView) findViewById(R.id.carThumbnail);
+            final TextView carTitleTextView = (TextView) findViewById(R.id.behaviorTitle);
+            final TextView carStarsTextView = (TextView) findViewById(R.id.carStars);
 
             Picasso.with(getApplicationContext()).load(carData.thumbnailURL).placeholder(R.drawable.models).into(carThumbnailImageView);
 
             carTitleTextView.setText(carData.title);
-            String stars = new String(new char[carData.stars]).replace("\0", "\u2605");
-            String emptyStars = new String(new char[5 - carData.stars]).replace("\0", "\u2606");
+            final String stars = new String(new char[carData.stars]).replace("\0", "\u2605");
+            final String emptyStars = new String(new char[5 - carData.stars]).replace("\0", "\u2606");
             carStarsTextView.setText(stars + emptyStars);
 
-            ListView listView = (ListView) findViewById(R.id.listView);
+            final ListView listView = (ListView) findViewById(R.id.listView);
 
-            Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+            final Geocoder geocoder = new Geocoder(this, Locale.getDefault());
 
             try {
                 final List<Address> addressArray = geocoder.getFromLocation(carData.lat, carData.lng, 1);
@@ -74,7 +70,7 @@ public class CarDetails extends AppCompatActivity {
                 e.printStackTrace();
             }
 
-            CarDetailsAdapter adapter = new CarDetailsAdapter(this, carData, formattedAddress);
+            final CarDetailsAdapter adapter = new CarDetailsAdapter(this, carData, formattedAddress);
             listView.setAdapter(adapter);
         }
     }
@@ -86,12 +82,12 @@ public class CarDetails extends AppCompatActivity {
         return true;
     }
 
-    public void createReservation(View view) throws IOException {
+    public void createReservation(final View view) throws IOException {
         Log.i("Button Clicked", "Create Reservation");
 
-        Intent createReservation = new Intent(view.getContext(), CreateReservation.class);
+        final Intent createReservation = new Intent(view.getContext(), CreateReservation.class);
 
-        Bundle bundle = new Bundle();
+        final Bundle bundle = new Bundle();
         bundle.putSerializable("carData", carData);
         bundle.putString("formattedAddress", formattedAddress);
         createReservation.putExtras(bundle);

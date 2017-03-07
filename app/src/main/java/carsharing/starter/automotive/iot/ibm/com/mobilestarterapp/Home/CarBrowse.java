@@ -1,10 +1,10 @@
 /**
  * Copyright 2016 IBM Corp. All Rights Reserved.
- *
+ * <p>
  * Licensed under the IBM License, a copy of which may be obtained at:
- *
+ * <p>
  * http://www14.software.ibm.com/cgi-bin/weblap/lap.pl?li_formnum=L-DDIN-AEGGZJ&popup=y&title=IBM%20IoT%20for%20Automotive%20Sample%20Starter%20Apps%20%28Android-Mobile%20and%20Server-all%29
- *
+ * <p>
  * You may not use this file except in compliance with the license.
  */
 package carsharing.starter.automotive.iot.ibm.com.mobilestarterapp.Home;
@@ -23,6 +23,7 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -48,6 +49,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -59,7 +61,7 @@ public class CarBrowse extends Fragment implements OnMapReadyCallback, LocationL
     private GoogleMap mMap;
     private GoogleApiClient client;
 
-    String[] pickerData = {
+    final String[] pickerData = {
             "Current Location",
             "Tokyo, Japan",
             "MGM Grand, Las Vegas",
@@ -69,7 +71,7 @@ public class CarBrowse extends Fragment implements OnMapReadyCallback, LocationL
     };
 
     // Latitude - Longitude
-    Double locationData[][] = {
+    final Double locationData[][] = {
             {0.0, 0.0},
             {35.709026, 139.731992},
             {36.102118, -115.165571},
@@ -87,12 +89,13 @@ public class CarBrowse extends Fragment implements OnMapReadyCallback, LocationL
 
     private boolean networkIntentNeeded = false;
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.activity_car_browse, container, false);
+    static private Location simulatedLocation = null;
 
-        SupportMapFragment mapFragment = (SupportMapFragment) this.getChildFragmentManager().findFragmentById(R.id.map);
+    @Override
+    public View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
+        final View view = inflater.inflate(R.layout.activity_car_browse, container, false);
+
+        final SupportMapFragment mapFragment = (SupportMapFragment) this.getChildFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
         locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
@@ -101,11 +104,11 @@ public class CarBrowse extends Fragment implements OnMapReadyCallback, LocationL
         return view;
     }
 
-    public void getCars(Location location) {
-        String url = API.carsNearby + "/" + location.getLatitude() + "/" + location.getLongitude();
+    public void getCars(final Location location) {
+        final String url = API.carsNearby + "/" + location.getLatitude() + "/" + location.getLongitude();
 
         try {
-            API.doRequest task = new API.doRequest(new API.doRequest.TaskListener() {
+            final API.doRequest task = new API.doRequest(new API.doRequest.TaskListener() {
                 @Override
                 public void postExecute(JSONArray result) throws JSONException {
                     JSONObject serverResponse = result.getJSONObject(result.length() - 1);
@@ -113,16 +116,17 @@ public class CarBrowse extends Fragment implements OnMapReadyCallback, LocationL
 
                     result.remove(result.length() - 1);
 
+                    final FragmentActivity activity = getActivity();
                     if (statusCode == 200) {
-                        ListView listView = (ListView) getView().findViewById(R.id.listView);
+                        final ListView listView = (ListView) getView().findViewById(R.id.listView);
 
-                        ArrayList<CarData> carsArray = new ArrayList<CarData>();
+                        final ArrayList<CarData> carsArray = new ArrayList<CarData>();
 
                         for (int i = 0; i < result.length(); i++) {
-                            CarData tempCarData = new CarData(result.getJSONObject(i));
+                            final CarData tempCarData = new CarData(result.getJSONObject(i));
                             carsArray.add(tempCarData);
 
-                            LatLng carLocation = new LatLng(tempCarData.lat, tempCarData.lng);
+                            final LatLng carLocation = new LatLng(tempCarData.lat, tempCarData.lng);
                             mMap.addMarker(new MarkerOptions()
                                     .position(carLocation)
                                     .title(tempCarData.title)
@@ -136,7 +140,7 @@ public class CarBrowse extends Fragment implements OnMapReadyCallback, LocationL
                             }
                         });
 
-                        CarDataAdapter adapter = new CarDataAdapter(getActivity().getApplicationContext(), carsArray);
+                        final CarDataAdapter adapter = new CarDataAdapter(activity.getApplicationContext(), carsArray);
                         listView.setAdapter(adapter);
 
                         final ArrayList<CarData> finalCarsArray = carsArray;
@@ -144,9 +148,9 @@ public class CarBrowse extends Fragment implements OnMapReadyCallback, LocationL
                         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                             @Override
                             public void onItemClick(AdapterView<?> adapter, View view, int position, long arg) {
-                                Intent carDetails = new Intent(view.getContext(), CarDetails.class);
+                                final Intent carDetails = new Intent(view.getContext(), CarDetails.class);
 
-                                Bundle bundle = new Bundle();
+                                final Bundle bundle = new Bundle();
                                 bundle.putSerializable("carData", finalCarsArray.get(position));
                                 carDetails.putExtras(bundle);
 
@@ -154,14 +158,15 @@ public class CarBrowse extends Fragment implements OnMapReadyCallback, LocationL
                             }
                         });
 
-                        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle((carsArray.size() == 1) ? "1 Car Found" : carsArray.size() + " Cars Found");
+                        final String title = (carsArray.size() == 1) ? "1 car found." : carsArray.size() + " cars found.";
+                        ((AppCompatActivity) activity).getSupportActionBar().setTitle(title);
 
                         Log.i("Car Data", result.toString());
                     } else if (statusCode == 500) {
-                        Toast toast = Toast.makeText(getActivity().getApplicationContext(), "There are too many devices registered with the server, please delete them and try again!", Toast.LENGTH_LONG);
+                        final Toast toast = Toast.makeText(activity.getApplicationContext(), "There are too many devices registered with the server, please delete them and try again!", Toast.LENGTH_LONG);
                         toast.show();
                     } else {
-                        Toast toast = Toast.makeText(getActivity().getApplicationContext(), "Error: Unable to Connect to the Server", Toast.LENGTH_LONG);
+                        final Toast toast = Toast.makeText(activity.getApplicationContext(), "Error: Unable to Connect to the Server", Toast.LENGTH_LONG);
                         toast.show();
                     }
                 }
@@ -176,8 +181,33 @@ public class CarBrowse extends Fragment implements OnMapReadyCallback, LocationL
     }
 
     @Override
-    public void onMapReady(GoogleMap googleMap) {
+    public void onMapReady(final GoogleMap googleMap) {
         mMap = googleMap;
+
+        mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+            @Override
+            public void onMapLongClick(final LatLng latLng) {
+                //System.out.println("MAP LONG CLICK " + latLng);
+
+                final Location location = new Location("NoProvider");
+                location.setLatitude(latLng.latitude);
+                location.setLongitude(latLng.longitude);
+                location.setTime(new Date().getTime());
+
+                String title = "";
+                if (simulatedLocation == null) {
+                    simulatedLocation = location;
+                    title = "This location is used next.";
+                } else {
+                    simulatedLocation = null;
+                    title = "Real location is used next.";
+                }
+                ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(title);
+
+                final Toast toast = Toast.makeText(getActivity().getApplicationContext(), "Long tap toggles location setting. Go back main menu and come back with new location!", Toast.LENGTH_LONG);
+                toast.show();
+            }
+        });
 
         getAccurateLocation(mMap);
     }
@@ -215,8 +245,8 @@ public class CarBrowse extends Fragment implements OnMapReadyCallback, LocationL
     }
 
     @Override
-    public void onLocationChanged(Location location) {
-        Log.i("Location Data", "New Location - " + location.getLatitude() + ", " +  location.getLongitude());
+    public void onLocationChanged(final Location location) {
+        Log.i("Location Data", "New Location - " + location.getLatitude() + ", " + location.getLongitude());
     }
 
     @Override
@@ -234,50 +264,65 @@ public class CarBrowse extends Fragment implements OnMapReadyCallback, LocationL
 
     }
 
-    public void getLocation(View view) {
+    public void getLocation(final View view) {
         if (ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
 
-        Location location = locationManager.getLastKnownLocation(provider);
+        final Location location = locationManager.getLastKnownLocation(provider);
 
         onLocationChanged(location);
     }
 
-    private void getAccurateLocation(GoogleMap googleMap) {
-        ConnectivityManager connectivityManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+    private void getAccurateLocation(final GoogleMap googleMap) {
+        final FragmentActivity activity = getActivity();
+        ((AppCompatActivity) activity).getSupportActionBar().setTitle("Searching cars...");
+        API.runInAsyncUIThread(new Runnable() {
+            @Override
+            public void run() {
+                getAccurateLocation2(googleMap);
+            }
+        }, activity);
+
+    }
+
+    private void getAccurateLocation2(final GoogleMap googleMap) {
+        final ConnectivityManager connectivityManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        final NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
 
         if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) && (networkInfo != null && networkInfo.isConnected())) {
-            if (ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                return;
-            }
-
-            locationManager = (LocationManager) getActivity().getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
-
-            List<String> providers = locationManager.getProviders(true);
-            Location finalLocation = null;
-
-            for (String provider : providers) {
+            if (simulatedLocation == null) {
                 if (ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                     return;
                 }
 
-                Location lastKnown = locationManager.getLastKnownLocation(provider);
+                locationManager = (LocationManager) getActivity().getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
 
-                if (lastKnown == null) {
-                    continue;
+                final List<String> providers = locationManager.getProviders(true);
+                Location finalLocation = null;
+
+                for (String provider : providers) {
+                    if (ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        return;
+                    }
+
+                    final Location lastKnown = locationManager.getLastKnownLocation(provider);
+
+                    if (lastKnown == null) {
+                        continue;
+                    }
+
+                    if (finalLocation == null || (lastKnown.getAccuracy() < finalLocation.getAccuracy())) {
+                        finalLocation = lastKnown;
+                    }
                 }
 
-                if (finalLocation == null || (lastKnown.getAccuracy() < finalLocation.getAccuracy())) {
-                    finalLocation = lastKnown;
-                }
+                location = finalLocation;
+            } else {
+                location = simulatedLocation;
             }
-
-            location = finalLocation;
-
             if (location != null) {
-                LatLng userLocation = new LatLng(location.getLatitude(), location.getLongitude());
+                final LatLng userLocation = new LatLng(location.getLatitude(), location.getLongitude());
 
                 mMap.addMarker(new MarkerOptions().position(userLocation).title("Your Location"));
 
@@ -295,7 +340,7 @@ public class CarBrowse extends Fragment implements OnMapReadyCallback, LocationL
             if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                 Toast.makeText(getActivity().getApplicationContext(), "Please turn on your GPS", Toast.LENGTH_LONG).show();
 
-                Intent gpsIntent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                final Intent gpsIntent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                 startActivityForResult(gpsIntent, GPS_INTENT);
 
                 if (networkInfo == null) {
@@ -305,7 +350,7 @@ public class CarBrowse extends Fragment implements OnMapReadyCallback, LocationL
                 if (networkInfo == null) {
                     Toast.makeText(getActivity().getApplicationContext(), "Please turn on Mobile Data or WIFI", Toast.LENGTH_LONG).show();
 
-                    Intent settingsIntent = new Intent(Settings.ACTION_SETTINGS);
+                    final Intent settingsIntent = new Intent(Settings.ACTION_SETTINGS);
                     startActivityForResult(settingsIntent, SETTINGS_INTENT);
                 }
             }
@@ -317,7 +362,7 @@ public class CarBrowse extends Fragment implements OnMapReadyCallback, LocationL
             if (networkIntentNeeded) {
                 Toast.makeText(getActivity().getApplicationContext(), "Please connect to a network", Toast.LENGTH_LONG).show();
 
-                Intent settingsIntent = new Intent(Settings.ACTION_SETTINGS);
+                final Intent settingsIntent = new Intent(Settings.ACTION_SETTINGS);
                 startActivityForResult(settingsIntent, SETTINGS_INTENT);
             } else {
                 getAccurateLocation(mMap);

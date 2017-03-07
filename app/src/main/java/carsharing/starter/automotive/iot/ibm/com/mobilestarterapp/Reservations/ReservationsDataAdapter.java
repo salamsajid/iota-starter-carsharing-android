@@ -10,13 +10,10 @@
 package carsharing.starter.automotive.iot.ibm.com.mobilestarterapp.Reservations;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Paint;
 import android.location.Address;
 import android.location.Geocoder;
-import android.net.Uri;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -36,13 +33,13 @@ import carsharing.starter.automotive.iot.ibm.com.mobilestarterapp.ConnectedDrive
 import carsharing.starter.automotive.iot.ibm.com.mobilestarterapp.R;
 
 public class ReservationsDataAdapter extends BaseAdapter {
-    private Context mContext;
-    private LayoutInflater inflater;
-    private ArrayList<ReservationsData> data;
+    final private Context mContext;
+    final private LayoutInflater inflater;
+    final private ArrayList<ReservationsData> data;
 
     static final GregorianCalendar[] pickupCal = { new GregorianCalendar() };
 
-    public ReservationsDataAdapter(Context context, ArrayList<ReservationsData> carsArray) {
+    public ReservationsDataAdapter(final Context context, final ArrayList<ReservationsData> carsArray) {
         mContext = context;
         data = carsArray;
         inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -64,13 +61,13 @@ public class ReservationsDataAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        View rowView = inflater.inflate(R.layout.list_item_reservation, parent, false);
+    public View getView(final int position, final View convertView, final ViewGroup parent) {
+        final View rowView = inflater.inflate(R.layout.list_item_reservation, parent, false);
 
-        TextView carTitleTextView = (TextView) rowView.findViewById(R.id.behaviorTitle);
-        TextView dateAndTime = (TextView) rowView.findViewById(R.id.dateAndTime);
-        TextView carAddress = (TextView) rowView.findViewById(R.id.carAddress);
-        ImageView carThumbnailImageView = (ImageView) rowView.findViewById(R.id.carThumbnail);
+        final TextView carTitleTextView = (TextView) rowView.findViewById(R.id.behaviorTitle);
+        final TextView dateAndTime = (TextView) rowView.findViewById(R.id.dateAndTime);
+        final TextView carAddress = (TextView) rowView.findViewById(R.id.carAddress);
+        final ImageView carThumbnailImageView = (ImageView) rowView.findViewById(R.id.carThumbnail);
 
         final CarData carData = data.get(position).carDetails;
 
@@ -78,7 +75,7 @@ public class ReservationsDataAdapter extends BaseAdapter {
         Picasso.with(mContext).load(carData.thumbnailURL).placeholder(R.drawable.models).into(carThumbnailImageView);
 
         if (carData.lng != null && carData.lat != null) {
-            Geocoder geocoder = new Geocoder(mContext, Locale.getDefault());
+            final Geocoder geocoder = new Geocoder(mContext, Locale.getDefault());
             String locationAddress = "";
 
             try {

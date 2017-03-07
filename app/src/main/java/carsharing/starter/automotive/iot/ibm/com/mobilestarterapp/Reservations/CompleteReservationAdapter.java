@@ -23,22 +23,20 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import java.io.IOException;
-import java.text.NumberFormat;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 
-import carsharing.starter.automotive.iot.ibm.com.mobilestarterapp.ConnectedDriverAPI.CarData;
 import carsharing.starter.automotive.iot.ibm.com.mobilestarterapp.ConnectedDriverAPI.ReservationsData;
 import carsharing.starter.automotive.iot.ibm.com.mobilestarterapp.R;
 
 public class CompleteReservationAdapter extends BaseAdapter {
-    private Context mContext;
-    private LayoutInflater inflater;
-    private ReservationsData reservationData;
+    final private Context mContext;
+    final private LayoutInflater inflater;
+    final private ReservationsData reservationData;
     static final GregorianCalendar[] pickupCal = { new GregorianCalendar() };
 
-    public CompleteReservationAdapter(Context context, ReservationsData data) {
+    public CompleteReservationAdapter(final Context context, final ReservationsData data) {
         mContext = context;
         reservationData = data;
         inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -61,12 +59,12 @@ public class CompleteReservationAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        View rowView = inflater.inflate(R.layout.list_item_completereservation, parent, false);
+        final View rowView = inflater.inflate(R.layout.list_item_completereservation, parent, false);
 
-        TextView pickupValueTextView = (TextView) rowView.findViewById(R.id.pickupValue);
-        TextView fromValueTextView = (TextView) rowView.findViewById(R.id.fromValue);
-        TextView plateValueTextView = (TextView) rowView.findViewById(R.id.plateValue);
-        TextView billValueTextView = (TextView) rowView.findViewById(R.id.billValue);
+        final TextView pickupValueTextView = (TextView) rowView.findViewById(R.id.pickupValue);
+        final TextView fromValueTextView = (TextView) rowView.findViewById(R.id.fromValue);
+        final TextView plateValueTextView = (TextView) rowView.findViewById(R.id.plateValue);
+        final TextView billValueTextView = (TextView) rowView.findViewById(R.id.billValue);
 
 //        dateValueTextView.setText(carData.availability);
 //        priceValueTextView.setText("$" + carData.hourlyRate + "/hr, $" + carData.dailyRate + "/day");
@@ -74,11 +72,11 @@ public class CompleteReservationAdapter extends BaseAdapter {
         pickupCal[0].setTimeInMillis(reservationData.pickupTime.longValue());
         pickupValueTextView.setText(CompleteReservation.dateToString(pickupCal[0]));
 
-        Geocoder geocoder = new Geocoder(mContext, Locale.getDefault());
+        final Geocoder geocoder = new Geocoder(mContext, Locale.getDefault());
         try {
             final List<Address> addressArray = geocoder.getFromLocation(reservationData.carDetails.lat, reservationData.carDetails.lng, 1);
 
-            String locationAddress = addressArray.get(0).getAddressLine(0);
+            final String locationAddress = addressArray.get(0).getAddressLine(0);
 
             fromValueTextView.setText((locationAddress.length() > 18) ? locationAddress.substring(0, 18) + "..." : locationAddress);
 
@@ -89,7 +87,7 @@ public class CompleteReservationAdapter extends BaseAdapter {
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
                     if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                        Intent geoIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("geo:" + reservationData.carDetails.lat + "," + reservationData.carDetails.lng + "?q=" + addressArray.get(0).getAddressLine(0)));
+                        final Intent geoIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("geo:" + reservationData.carDetails.lat + "," + reservationData.carDetails.lng + "?q=" + addressArray.get(0).getAddressLine(0)));
                         geoIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
                         mContext.startActivity(geoIntent);

@@ -1,15 +1,14 @@
 /**
  * Copyright 2016 IBM Corp. All Rights Reserved.
- *
+ * <p>
  * Licensed under the IBM License, a copy of which may be obtained at:
- *
+ * <p>
  * http://www14.software.ibm.com/cgi-bin/weblap/lap.pl?li_formnum=L-DDIN-AEGGZJ&popup=y&title=IBM%20IoT%20for%20Automotive%20Sample%20Starter%20Apps%20%28Android-Mobile%20and%20Server-all%29
- *
+ * <p>
  * You may not use this file except in compliance with the license.
  */
 package carsharing.starter.automotive.iot.ibm.com.mobilestarterapp;
 
-import android.*;
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
@@ -25,11 +24,14 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
@@ -41,23 +43,20 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.gson.JsonObject;
+import com.ibm.iotf.client.device.DeviceClient;
 
-
-import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Properties;
+import java.util.TimeZone;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -71,7 +70,7 @@ public class AnalyzeMyDriving extends Fragment implements OnMapReadyCallback, Lo
 
     protected static String tripID = null;
     protected static String deviceID = FirstPage.mobileAppDeviceId;
-    protected static final String[] reservationId = { new String() }; // Needs to be final to be able to access and change it inside the API.doRequest callback function
+    protected static final String[] reservationId = {new String()}; // Needs to be final to be able to access and change it inside the API.doRequest callback function
 
     protected static boolean userUnlocked = false;
     protected static boolean startedDriving = false;
@@ -79,9 +78,7 @@ public class AnalyzeMyDriving extends Fragment implements OnMapReadyCallback, Lo
 
     private int tripCount = 0;
 
-    protected static MqttAsyncClient mqtt;
-    private static MqttConnectOptions options = new MqttConnectOptions();
-    private static MemoryPersistence persistence = new MemoryPersistence();
+    private DeviceClient deviceClient;
 
     private GoogleMap mMap;
     private GoogleApiClient client;
@@ -101,102 +98,114 @@ public class AnalyzeMyDriving extends Fragment implements OnMapReadyCallback, Lo
 
     private boolean networkIntentNeeded = false;
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.activity_analyze_my_driving, container, false);
+    private String speedMessage = "";
+    private int transmissionCount = 0;
 
-        SupportMapFragment mapFragment = (SupportMapFragment) this.getChildFragmentManager().findFragmentById(R.id.map);
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        final View view = inflater.inflate(R.layout.activity_analyze_my_driving, container, false);
+
+        final SupportMapFragment mapFragment = (SupportMapFragment) this.getChildFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        final AppCompatActivity activity = (AppCompatActivity) getActivity();
+        locationManager = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
         provider = locationManager.getBestProvider(new Criteria(), false);
 
-        ((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Setting Up...");
+        final ActionBar supportActionBar = activity.getSupportActionBar();
+        supportActionBar.setDisplayHomeAsUpEnabled(true);
+        supportActionBar.setTitle("Setting up...");
 
         startDriving = (ImageButton) view.findViewById(R.id.imageButton);
-
         startDriving.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 Log.i("Button Clicked", "Start Driving");
 
                 if (!startedDriving) {
-                    if(startDrive(deviceID)){
-                        reserveCar();
+                    supportActionBar.setTitle("Preparing for the trip...");
+                    API.runInAsyncUIThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (startDrive(deviceID)) {
+                                AnalyzeMyDriving.this.getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                                reserveCar();
+                                startDriving.setImageResource(R.drawable.enddriving);
+                                transmissionCount = 0;
+                                supportActionBar.setTitle("Please start driving safely.");
+                            } else {
+                                Toast toast = Toast.makeText(activity.getApplicationContext(), "Failed to connect to IoT Platform.", Toast.LENGTH_SHORT);
+                                toast.show();
 
-                        startDriving.setImageResource(R.drawable.enddriving);
-                    }else{
-                        Toast toast = Toast.makeText(getActivity().getApplicationContext(), "Failed to connect to IoT Platform", Toast.LENGTH_SHORT);
-                        toast.show();
-                    }
+                                supportActionBar.setTitle("Check server connection.");
+                            }
+                        }
+                    }, activity);
                 } else {
                     startedDriving = false;
-                    completeReservation(reservationId[0], false);
-
-                    startDriving.setImageResource(R.drawable.startdriving);
+                    supportActionBar.setTitle("Completing the trip...");
+                    API.runInAsyncUIThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            completeReservation(reservationId[0], false);
+                            startDriving.setImageResource(R.drawable.startdriving);
+                            AnalyzeMyDriving.this.getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                        }
+                    }, activity);
                 }
             }
         });
 
         this.view = view;
-
         return view;
     }
 
     @Override
-    public void onMapReady(GoogleMap googleMap) {
+    public void onMapReady(final GoogleMap googleMap) {
         mMap = googleMap;
         if (this.view != null) {
             getLocation(this.view);
         }
     }
 
-    public boolean startDrive(String deviceId) {
-        if (mqtt == null) {
+    public boolean startDrive(final String deviceId) {
+        if (deviceClient == null) {
             return false;
         }
-
         if (reservationForMyDevice(deviceId)) {
             userUnlocked = true;
-
             if (tripID == null) {
                 tripID = UUID.randomUUID().toString();
             }
         }
-
         return true;
     }
 
-    public void stopDrive(String deviceId) {
+    public void stopDrive(final String deviceId) {
         if (reservationForMyDevice(deviceId)) {
             userUnlocked = false;
         }
     }
 
-    public void completeDrive(String deviceId) {
+    public void completeDrive(final String deviceId) {
         if (reservationForMyDevice(deviceId)) {
             tripID = null;  // clear the tripID
         }
     }
 
-    public static String getTripId(String deviceId) {
+    public static String getTripId(final String deviceId) {
         if (reservationForMyDevice(deviceId)) {
             return tripID;
         }
-
         return null;
     }
 
-    public static boolean reservationForMyDevice(String deviceId) {
+    public static boolean reservationForMyDevice(final String deviceId) {
         return behaviorDemo && deviceId == FirstPage.mobileAppDeviceId;
     }
 
     @Override
     public void onStart() {
         super.onStart();
-
         if (client != null) {
             client.connect();
         }
@@ -205,220 +214,224 @@ public class AnalyzeMyDriving extends Fragment implements OnMapReadyCallback, Lo
     @Override
     public void onResume() {
         super.onResume();
-
-        if (ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-
-        locationManager.requestLocationUpdates(provider, 500, 1, this);
+        requestLocationUpdates(true);
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        requestLocationUpdates(false);
+    }
 
-
-        if (ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+    private void requestLocationUpdates(final boolean request) {
+        if (!request && locationManager != null) {
+            locationManager.removeUpdates(this);
+        }
+        final FragmentActivity activity = getActivity();
+        if (activity == null) {
             return;
         }
-
-        locationManager.removeUpdates(this);
+        if (ActivityCompat.checkSelfPermission(activity.getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(activity.getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        if (request && locationManager != null) {
+            locationManager.requestLocationUpdates(provider, 2000, 1.0f, this);
+        }
     }
+
 
     @Override
     public void onLocationChanged(Location location) {
 //        Log.i("Location Data", "New Location - " + location.getLatitude() + ", " +  location.getLongitude());
-
         getAccurateLocation(mMap);
     }
 
-    private void getAccurateLocation(GoogleMap googleMap) {
-        ConnectivityManager connectivityManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+    private void getAccurateLocation(final GoogleMap googleMap) {
+        final FragmentActivity activity = getActivity();
+        if (activity == null) {
+            Log.e("getAccurateLocation", "do nothing as getActivity()==null");
+            return;
+        }
+        final ConnectivityManager connectivityManager = (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
+        final NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
 
-        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) && (networkInfo != null && networkInfo.isConnected())) {
-            if (ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        final boolean gpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        final boolean networkConnected = networkInfo != null && networkInfo.isConnected();
+        if (gpsEnabled && networkConnected) {
+            if (!checkCurrentLocation()) {
+                Log.e("Location Data", "Not Working!");
+//                Toast.makeText(getActivity().getApplicationContext(), "Please activate your location settings and restart the application!", Toast.LENGTH_LONG).show();
+                getAccurateLocation(mMap);
                 return;
             }
+            if (mMap != null) {
+                float zoom = mMap.getCameraPosition().zoom;
+                zoom = Math.max(14, zoom);
+                zoom = Math.min(18, zoom);
 
-            locationManager = (LocationManager) getActivity().getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
 
-            List<String> providers = locationManager.getProviders(true);
-            Location finalLocation = null;
-
-            for (String provider : providers) {
-                if (ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    return;
-                }
-
-                Location lastKnown = locationManager.getLastKnownLocation(provider);
-
-                if (lastKnown == null) {
-                    continue;
-                }
-
-                if (finalLocation == null || (lastKnown.getAccuracy() < finalLocation.getAccuracy())) {
-                    finalLocation = lastKnown;
-                }
-            }
-
-            location = finalLocation;
-
-            if (location != null) {
                 mMap.clear();
-
-                LatLng newLocation = new LatLng(location.getLatitude(), location.getLongitude());
-
+                final LatLng newLocation = new LatLng(location.getLatitude(), location.getLongitude());
 //                if (!cameraSet) {
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(newLocation));
-                mMap.animateCamera(CameraUpdateFactory.zoomTo(15), 2000, null);
-
+                mMap.animateCamera(CameraUpdateFactory.zoomTo(zoom), 2000, null);
 //                    cameraSet = true;
 //                }
-
                 mMap.addMarker(new MarkerOptions()
                         .position(newLocation).title("Your Location")
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.models)));
+            }
+            final ActionBar supportActionBar = ((AppCompatActivity) activity).getSupportActionBar();
+            if (startedDriving) {
+                if (!behaviorDemo) {
+                    // get credentials may be failed
+                    startedDriving = false;
+                    completeReservation(reservationId[0], false);
+                    return;
+                }
+                speedMessage = "" + Math.round(location.getSpeed() * 60 * 60 / 16.0934) / 100.0 + " MPH";
+                supportActionBar.setTitle(speedMessage + " - Data not sent");
 
-                if (startedDriving) {
-                    if(!behaviorDemo){
-                        // get credentials may be failed
-                        startedDriving = false;
-                        completeReservation(reservationId[0], false);
-
-                        return;
-                    }
-
-                    ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Speed " + Math.round(location.getSpeed() * 60 * 60 / 16.0934)/100.0 + " MPH" );
-
-                    tripCount += 1;
-                    if(tripCount % 10 == 0) {
+                tripCount += 1;
+                if (tripCount % 10 == 0) {
 //                renderMapMatchedLocation()
-                    }
                 }
-
-
-                if (behaviorDemo) {
-                    if (mqtt == null && needCredentials) {
-                        String url = API.credentials + "/" + FirstPage.mobileAppDeviceId + "?owneronly=true";
-
-                        try {
-                            API.doRequest task = new API.doRequest(new API.doRequest.TaskListener() {
-                                @Override
-                                public void postExecute(JSONArray result) throws JSONException, MqttException {
-                                    result.remove(result.length() - 1);
-
-                                    if (mqtt != null) {
-                                        // already got credentials
-                                        return;
-                                    }
-                                    if (result.length() == 0) {
-                                        Toast.makeText(getActivity().getApplicationContext(), "MQTT - Failed to get credentials. You may have exceeded the free plan limit.", Toast.LENGTH_LONG).show();
-
-                                        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("An Error Occured");
-
-                                        behaviorDemo = false;
-
-                                        return;
-                                    }
-
-                                    ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Press Start Driving when ready");
-
-                                    JSONObject deviceCredentials = result.getJSONObject(0);
-
-                                    Log.i("MQTT", "calling mqttsettings");
-
-                                    final String clientIdPid = "d:" + deviceCredentials.getString("org") + ":" + deviceCredentials.getString("deviceType") + ":" + deviceCredentials.getString("deviceId");
-                                    final String broker       = "wss://" + deviceCredentials.getString("org") + ".messaging.internetofthings.ibmcloud.com:443";
-                                    MemoryPersistence persistence = new MemoryPersistence();
-
-                                    try {
-                                        mqtt = new MqttAsyncClient(broker, clientIdPid, persistence);
-
-                                        options.setCleanSession(true);
-                                        options.setUserName("use-token-auth");
-                                        options.setPassword(deviceCredentials.getString("token").toCharArray());
-                                        options.setKeepAliveInterval(90);
-
-                                        Log.i("MQTT", "Connecting to broker: " + broker);
-                                        mqtt.connect(options);
-
-                                        Log.i("MQTT", "Connected");
-                                    } catch(MqttException me) {
-                                        Log.e("Reason", me.getReasonCode() + "");
-                                        Log.e("Message", me.getMessage());
-                                        Log.e("Localized Message", me.getLocalizedMessage());
-                                        Log.e("Cause", me.getCause() + "");
-                                        Log.e("Exception", me + "");
-
-                                        me.printStackTrace();
-                                    }
-
-                                    Log.i("Credentials Data", result.toString());
-
-                                    needCredentials = false;
-                                }
-                            });
-
-                            task.execute(url, "GET").get();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        } catch (ExecutionException e) {
-                            e.printStackTrace();
+            } else if (deviceClient != null) {
+                supportActionBar.setTitle("Press Start Driving when ready.");
+            }
+            if (behaviorDemo) {
+                API.runInAsyncUIThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (deviceClient == null && needCredentials) {
+                            createDeviceClient();
+                            connectDeviceClient();
+                        }
+                        if (userUnlocked) {
+                            sendLocation(location);
                         }
                     }
-
-                    if (mqtt != null && userUnlocked) {
-                        if (!mqtt.isConnected()) {
-                            try {
-                                mqtt.connect(options);
-                            } catch (MqttException e) {
-                                e.printStackTrace();
-                            }
-                        } else {
-                            Log.d("MQTT", "Connected - Publishing NOW");
-
-                            try {
-                                sendLocation(location);
-                            } catch (MqttException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                }
-            } else {
-                Log.e("Location Data", "Not Working!");
-
-//                Toast.makeText(getActivity().getApplicationContext(), "Please activate your location settings and restart the application!", Toast.LENGTH_LONG).show();
-                getAccurateLocation(mMap);
+                }, activity);
             }
         } else {
-            if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                Toast.makeText(getActivity().getApplicationContext(), "Please turn on your GPS", Toast.LENGTH_LONG).show();
+            if (!gpsEnabled) {
+                Toast.makeText(activity.getApplicationContext(), "Please turn on your GPS", Toast.LENGTH_LONG).show();
 
-                Intent gpsIntent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                final Intent gpsIntent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                 startActivityForResult(gpsIntent, GPS_INTENT);
 
-                if (networkInfo == null) {
+                if (!networkConnected) {
                     networkIntentNeeded = true;
                 }
-            } else {
-                if (networkInfo == null) {
-                    Toast.makeText(getActivity().getApplicationContext(), "Please turn on Mobile Data or WIFI", Toast.LENGTH_LONG).show();
+            } else if (!networkConnected) {
+                Toast.makeText(activity.getApplicationContext(), "Please turn on Mobile Data or WIFI", Toast.LENGTH_LONG).show();
 
-                    Intent settingsIntent = new Intent(Settings.ACTION_SETTINGS);
-                    startActivityForResult(settingsIntent, SETTINGS_INTENT);
-                }
+                final Intent settingsIntent = new Intent(Settings.ACTION_SETTINGS);
+                startActivityForResult(settingsIntent, SETTINGS_INTENT);
             }
         }
     }
 
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    private boolean checkCurrentLocation() {
+        if (ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return false;
+        }
+        locationManager = (LocationManager) getActivity().getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+
+        final List<String> providers = locationManager.getProviders(true);
+        Location finalLocation = null;
+
+        for (final String provider : providers) {
+            final Location lastKnown = locationManager.getLastKnownLocation(provider);
+            if (lastKnown == null) {
+                continue;
+            }
+            if (finalLocation == null || (lastKnown.getAccuracy() < finalLocation.getAccuracy())) {
+                finalLocation = lastKnown;
+            }
+        }
+        location = finalLocation;
+        return location != null;
+    }
+
+    private void createDeviceClient() {
+        final String url = API.credentials + "/" + FirstPage.mobileAppDeviceId + "?owneronly=true";
+        try {
+            API.doRequest task = new API.doRequest(new API.doRequest.TaskListener() {
+                @Override
+                public void postExecute(JSONArray result) throws JSONException, MqttException {
+                    result.remove(result.length() - 1);
+
+                    final FragmentActivity activity = getActivity();
+                    final ActionBar supportActionBar = ((AppCompatActivity) activity).getSupportActionBar();
+                    if (deviceClient != null) {
+                        // already got credentials
+                        return;
+                    }
+                    if (result.length() == 0) {
+                        Toast.makeText(activity.getApplicationContext(), "MQTT - Failed to get credentials. You may have exceeded the free plan limit.", Toast.LENGTH_LONG).show();
+                        supportActionBar.setTitle("An error occurred.");
+                        behaviorDemo = false;
+                        return;
+                    }
+                    supportActionBar.setTitle("Press Start Driving when ready.");
+
+                    final JSONObject deviceCredentials = result.getJSONObject(0);
+                    try {
+                        final Properties options = new Properties();
+                        options.setProperty("org", deviceCredentials.getString("org"));
+                        options.setProperty("type", deviceCredentials.getString("deviceType"));
+                        options.setProperty("id", deviceCredentials.getString("deviceId"));
+                        options.setProperty("auth-method", "token");
+                        options.setProperty("auth-token", deviceCredentials.getString("token"));
+                        deviceClient = new DeviceClient(options);
+                    } catch (MqttException me) {
+                        me.printStackTrace();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    Log.i("Credentials Data", result.toString());
+
+                    needCredentials = false;
+                }
+            });
+
+            task.execute(url, "GET").get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // return true if connection exists
+    private boolean connectDeviceClient() {
+        if (deviceClient == null) {
+            return false;
+        }
+        if (!deviceClient.isConnected()) {
+            try {
+                deviceClient.connect();
+                Log.d("MQTT", "Connected");
+                return true;
+            } catch (MqttException e) {
+                e.printStackTrace();
+                Log.d("MQTT", "Failed to connect");
+                return false;
+            }
+        } else {
+            return true;
+        }
+    }
+
+    public void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
         if (requestCode == GPS_INTENT) {
             if (networkIntentNeeded) {
                 Toast.makeText(getActivity().getApplicationContext(), "Please connect to a network", Toast.LENGTH_LONG).show();
 
-                Intent settingsIntent = new Intent(Settings.ACTION_SETTINGS);
+                final Intent settingsIntent = new Intent(Settings.ACTION_SETTINGS);
                 startActivityForResult(settingsIntent, SETTINGS_INTENT);
             } else {
                 getAccurateLocation(mMap);
@@ -428,7 +441,6 @@ public class AnalyzeMyDriving extends Fragment implements OnMapReadyCallback, Lo
 
             getAccurateLocation(mMap);
         }
-
     }
 
     @Override
@@ -441,13 +453,16 @@ public class AnalyzeMyDriving extends Fragment implements OnMapReadyCallback, Lo
 
     }
 
-    public void getLocation(View view) {
-        if (ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+    public void getLocation(final View view) {
+        final FragmentActivity activity = getActivity();
+        if (activity == null) {
             return;
         }
-
-        Location location = locationManager.getLastKnownLocation(provider);
-
+        if (ActivityCompat.checkSelfPermission(activity.getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(activity.getApplicationContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        final Location location = locationManager.getLastKnownLocation(provider);
         onLocationChanged(location);
     }
 
@@ -456,43 +471,53 @@ public class AnalyzeMyDriving extends Fragment implements OnMapReadyCallback, Lo
 
     }
 
-    public void sendLocation(Location location) throws MqttException {
-        if(mqtt == null || !mqtt.isConnected()){
-            return;
+    public void sendLocation(final Location location) {
+        if (connectDeviceClient()) {
+            final GregorianCalendar cal = new GregorianCalendar();
+            final TimeZone gmt = TimeZone.getTimeZone("GMT");
+            cal.setTimeZone(gmt);
+            final SimpleDateFormat formattedCal = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+            formattedCal.setCalendar(cal);
+            final String timestamp = formattedCal.format(cal.getTime());
+
+            final double speed = Math.max(0.0, location.getSpeed() * 60 * 60 / 1000);
+            final double longitude = location.getLongitude();
+            final double latitude = location.getLatitude();
+            final String mobileAppDeviceId = FirstPage.mobileAppDeviceId;
+            final String status = tripID != null ? "Unlocked" : "Locked";
+
+            if (tripID == null) {
+                // this trip should be completed, so lock device now
+                userUnlocked = false;
+            }
+
+            final JsonObject event = new JsonObject();
+            final JsonObject data = new JsonObject();
+            event.add("d", data);
+            data.addProperty("trip_id", tripID);
+            data.addProperty("speed", speed);
+            data.addProperty("lng", longitude);
+            data.addProperty("lat", latitude);
+            data.addProperty("ts", timestamp);
+            data.addProperty("id", mobileAppDeviceId);
+            data.addProperty("status", status);
+
+            final ActionBar supportActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+            if (deviceClient.publishEvent("sensorData", event, 0)) {
+                Log.d("MQTT", "publish event " + event.toString());
+                supportActionBar.setTitle(speedMessage + " - Data sent (" + (++transmissionCount) + ")");
+            } else {
+                Log.d("MQTT", "ERROR in publishing event " + event.toString());
+                supportActionBar.setTitle("Data Transmission Error.");
+            }
         }
-
-        GregorianCalendar cal = new GregorianCalendar();
-        SimpleDateFormat formattedCal = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-        formattedCal.setCalendar(cal);
-
-        String dateFormatted = formattedCal.format(cal.getTime());
-
-        ArrayList<ArrayList<String>> data = new ArrayList<ArrayList<String>>();
-        data.add(new ArrayList<String>(Arrays.asList("speed", Math.max(0.0, location.getSpeed() * 60 * 60 / 1000) + "")));
-        data.add(new ArrayList<String>(Arrays.asList("lng", location.getLongitude() + "")));
-        data.add(new ArrayList<String>(Arrays.asList("lat", location.getLatitude() + "")));
-        data.add(new ArrayList<String>(Arrays.asList("ts", dateFormatted)));
-        data.add(new ArrayList<String>(Arrays.asList("id", FirstPage.mobileAppDeviceId)));
-        data.add(new ArrayList<String>(Arrays.asList("status", tripID != null ? "Unlocked" : "Locked")));
-
-        if(tripID != null){
-            data.add(new ArrayList<String>(Arrays.asList("trip_id", tripID)));
-        }else{
-            // this trip should be completed, so lock device now
-            userUnlocked = false;
-        }
-
-        String stringData = jsonToString(data);
-        MqttMessage message = new MqttMessage(stringData.getBytes());
-
-        mqtt.publish("iot-2/evt/sensorData/fmt/json", message);
     }
 
     public String jsonToString(ArrayList<ArrayList<String>> data) {
         String temp = "{\"d\":{";
         int accum = 0;
 
-        for (int i=0; i < data.size(); i++) {
+        for (int i = 0; i < data.size(); i++) {
             if (accum == (data.size() - 1)) {
                 temp += "\"" + data.get(i).get(0) + "\": \"" + data.get(i).get(1) + "\"}}";
             } else {
@@ -505,15 +530,15 @@ public class AnalyzeMyDriving extends Fragment implements OnMapReadyCallback, Lo
         return temp;
     }
 
-    public void completeReservation(String resId, final boolean alreadyTaken) {
-        String url = API.reservation + "/" + resId;
+    public void completeReservation(final String resId, final boolean alreadyTaken) {
+        final String url = API.reservation + "/" + resId;
 
         try {
-            API.doRequest task = new API.doRequest(new API.doRequest.TaskListener() {
+            final API.doRequest task = new API.doRequest(new API.doRequest.TaskListener() {
                 @Override
                 public void postExecute(JSONArray result) throws JSONException {
-                    JSONObject serverResponse = result.getJSONObject(result.length() - 1);
-                    int statusCode = serverResponse.getInt("statusCode");
+                    final JSONObject serverResponse = result.getJSONObject(result.length() - 1);
+                    final int statusCode = serverResponse.getInt("statusCode");
 
                     result.remove(result.length() - 1);
 
@@ -522,7 +547,7 @@ public class AnalyzeMyDriving extends Fragment implements OnMapReadyCallback, Lo
 
                     switch (statusCode) {
                         case 200:
-                            title = "Drive completed";
+                            title = "Trip completed.";
                             message = "Please allow at least 30 minutes for the driver behavior data to be analyzed";
                             reservationId[0] = null;
 
@@ -531,10 +556,11 @@ public class AnalyzeMyDriving extends Fragment implements OnMapReadyCallback, Lo
                             title = "Something went wrong.";
                     }
 
-                    ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(title);
+                    final AppCompatActivity activity = (AppCompatActivity) getActivity();
+                    activity.getSupportActionBar().setTitle(title);
 
                     if (!alreadyTaken) {
-                        Toast toast = Toast.makeText(((AppCompatActivity) getActivity()).getApplicationContext(), message, Toast.LENGTH_SHORT);
+                        Toast toast = Toast.makeText(activity.getApplicationContext(), message, Toast.LENGTH_SHORT);
                         toast.show();
                     }
 
@@ -542,12 +568,12 @@ public class AnalyzeMyDriving extends Fragment implements OnMapReadyCallback, Lo
                 }
             });
 
-            String trip_id = getTripId(deviceID);
+            final String trip_id = getTripId(deviceID);
 
-            JSONObject bodyObject = new JSONObject();
+            final JSONObject bodyObject = new JSONObject();
             bodyObject.put("status", "close");
 
-            if(trip_id != null){
+            if (trip_id != null) {
                 // bind this trip to this reservation
                 bodyObject.put("trip_id", trip_id);
             }
@@ -584,58 +610,51 @@ public class AnalyzeMyDriving extends Fragment implements OnMapReadyCallback, Lo
     }
 
     public void reserveCar() {
-        // reserve my device as a car
-        String url = API.reservation;
-
-        GregorianCalendar temp = new GregorianCalendar();
-
-        long pickupTime = temp.getTimeInMillis() / 1000;
-        long dropoffTime = (temp.getTimeInMillis() / 1000) + 3600;
-
-        Uri.Builder builder = new Uri.Builder()
+// reserve my device as a car
+        final String url = API.reservation;
+        final GregorianCalendar temp = new GregorianCalendar();
+        final long pickupTime = temp.getTimeInMillis() / 1000;
+        final long dropoffTime = (temp.getTimeInMillis() / 1000) + 3600;
+        final Uri.Builder builder = new Uri.Builder()
                 .appendQueryParameter("carId", deviceID)
                 .appendQueryParameter("pickupTime", pickupTime + "")
                 .appendQueryParameter("dropOffTime", dropoffTime + "");
-
-        String query = builder.build().getEncodedQuery();
+        final String query = builder.build().getEncodedQuery();
 
         try {
-            API.doRequest task = new API.doRequest(new API.doRequest.TaskListener() {
+            final API.doRequest task = new API.doRequest(new API.doRequest.TaskListener() {
                 @Override
                 public void postExecute(JSONArray result) throws JSONException {
-                    JSONObject serverResponse = result.getJSONObject(result.length() - 1);
-                    int statusCode = serverResponse.getInt("statusCode");
+                    final JSONObject serverResponse = result.getJSONObject(result.length() - 1);
+                    final int statusCode = serverResponse.getInt("statusCode");
 
                     result.remove(result.length() - 1);
-
                     switch (statusCode) {
                         case 200:
                             // start driving
                             startedDriving = true;
                             reservationId[0] = result.getJSONObject(0).getString("reservationId");
                             Reservations.userReserved = true;
-                            try {
-                                sendLocation(locationManager.getLastKnownLocation(provider));
-                            } catch (MqttException e) {
-                                e.printStackTrace();
-                            } catch (SecurityException e) {
-                                e.printStackTrace();
-                            }
+                            Log.i("Reservation", "Made=" + result.toString());
+
+                            getAccurateLocation(mMap);
+
                             break;
                         case 409:
-                            ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Car already taken");
+                            ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Car already taken.");
+                            Log.i("Reservation", "Already Exists=" + result.toString());
                             useExistingReservation();
 
                             break;
                         case 404:
-                            ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Car is not available");
+                            ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Car not available.");
+                            Log.i("Reservation", "Not Made" + result.toString());
 
                             break;
                         default:
-                            ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Something Went Wrong.");
+                            ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Something went wrong.");
+                            Log.i("Reservation", "Error" + result.toString());
                     }
-
-                    Log.i("Reserve Data", result.toString());
                 }
             });
 
@@ -649,18 +668,15 @@ public class AnalyzeMyDriving extends Fragment implements OnMapReadyCallback, Lo
     }
 
     public void useExistingReservation() {
-        String url = API.reservations;
+        final String url = API.reservations;
 
         try {
-            API.doRequest task = new API.doRequest(new API.doRequest.TaskListener() {
+            final API.doRequest task = new API.doRequest(new API.doRequest.TaskListener() {
                 @Override
                 public void postExecute(JSONArray result) throws JSONException {
                     result.remove(result.length() - 1);
-
-                    ArrayList<ReservationsData> reservationsArray = new ArrayList<ReservationsData>();
-
-                    for (int i=0; i < result.length(); i++) {
-                        ReservationsData reservationData = new ReservationsData(result.getJSONObject(i));
+                    for (int i = 0; i < result.length(); i++) {
+                        final ReservationsData reservationData = new ReservationsData(result.getJSONObject(i));
 
                         if (reservationData.carId.equals(FirstPage.mobileAppDeviceId)) {
                             if (reservationData.status.equals("driving")) {

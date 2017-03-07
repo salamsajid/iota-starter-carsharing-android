@@ -1,10 +1,10 @@
 /**
  * Copyright 2016 IBM Corp. All Rights Reserved.
- *
+ * <p>
  * Licensed under the IBM License, a copy of which may be obtained at:
- *
+ * <p>
  * http://www14.software.ibm.com/cgi-bin/weblap/lap.pl?li_formnum=L-DDIN-AEGGZJ&popup=y&title=IBM%20IoT%20for%20Automotive%20Sample%20Starter%20Apps%20%28Android-Mobile%20and%20Server-all%29
- *
+ * <p>
  * You may not use this file except in compliance with the license.
  */
 package carsharing.starter.automotive.iot.ibm.com.mobilestarterapp.ConnectedDriverAPI;
@@ -22,30 +22,18 @@ import java.util.List;
 import java.util.Map;
 
 public class DriverStatistics implements Serializable {
-    public Double totalDistance;
-    public Scoring scoring;
-    public SpeedPattern speedPattern;
-    public RoadType roadType;
-    public TimeRange timeRange;
+    public final Double totalDistance;
+    public final Scoring scoring;
+    public final SpeedPattern speedPattern;
+    public final RoadType roadType;
+    public final TimeRange timeRange;
 
-    public DriverStatistics(JSONObject profileData) throws JSONException {
+    public DriverStatistics(final JSONObject profileData) throws JSONException {
         totalDistance = profileData.getDouble("totalDistance");
-
-        if (profileData.has("scoring")) {
-            scoring = new Scoring(profileData.getJSONObject("scoring"));
-        }
-
-        if (profileData.has("speedPattern")) {
-            speedPattern = new SpeedPattern(profileData.getJSONObject("speedPattern"));
-        }
-
-        if (profileData.has("roadType")) {
-            roadType = new RoadType(profileData.getJSONObject("roadType"));
-        }
-
-        if (profileData.has("timeRange")) {
-            timeRange = new TimeRange(profileData.getJSONObject("timeRange"));
-        }
+        scoring = profileData.has("scoring") ? new Scoring(profileData.getJSONObject("scoring")) : null;
+        speedPattern = profileData.has("speedPattern") ? new SpeedPattern(profileData.getJSONObject("speedPattern")) : null;
+        roadType = profileData.has("roadType") ? new RoadType(profileData.getJSONObject("roadType")) : null;
+        timeRange = profileData.has("timeRange") ? new TimeRange(profileData.getJSONObject("timeRange")) : null;
     }
 
     public class RoadType {
@@ -111,14 +99,12 @@ public class DriverStatistics implements Serializable {
             // SORT
             List<Map.Entry<String, Double>> list = new LinkedList<>(roadTypes.entrySet());
 
-            Collections.sort(list, new Comparator<Map.Entry<String,Double>>()
-            {
+            Collections.sort(list, new Comparator<Map.Entry<String, Double>>() {
                 @Override
-                public int compare(Map.Entry<String,Double> obj1, Map.Entry<String,Double> obj2)
-                {
+                public int compare(Map.Entry<String, Double> obj1, Map.Entry<String, Double> obj2) {
                     return (obj2.getValue()).compareTo(obj1.getValue());
                 }
-            } );
+            });
 
             for (int i = 0; i < list.size(); i++) {
                 roadTypesSortedKeys.add(list.get(i).getKey());
@@ -193,14 +179,12 @@ public class DriverStatistics implements Serializable {
             // SORT
             List<Map.Entry<String, Double>> list = new LinkedList<>(trafficConditions.entrySet());
 
-            Collections.sort(list, new Comparator<Map.Entry<String,Double>>()
-            {
+            Collections.sort(list, new Comparator<Map.Entry<String, Double>>() {
                 @Override
-                public int compare(Map.Entry<String,Double> obj1, Map.Entry<String,Double> obj2)
-                {
+                public int compare(Map.Entry<String, Double> obj1, Map.Entry<String, Double> obj2) {
                     return (obj2.getValue()).compareTo(obj1.getValue());
                 }
-            } );
+            });
 
             for (int i = 0; i < list.size(); i++) {
                 trafficConditionsSortedKeys.add(list.get(i).getKey());
@@ -222,7 +206,7 @@ public class DriverStatistics implements Serializable {
         public ArrayList<String> timesOfDaySortedKeys = new ArrayList<String>();
 
         public TimeRange(JSONObject timeRangeData) throws JSONException {
-            if (timeRangeData.has(morningPeak_key)){
+            if (timeRangeData.has(morningPeak_key)) {
                 morningPeak = timeRangeData.getDouble(morningPeak_key);
 
                 timesOfDay.put(morningPeak_key, morningPeak);
@@ -259,16 +243,14 @@ public class DriverStatistics implements Serializable {
 
         public void toDictionary() {
             // SORT
-            List<Map.Entry<String, Double>> list = new LinkedList<>(timesOfDay.entrySet());
+            final List<Map.Entry<String, Double>> list = new LinkedList<>(timesOfDay.entrySet());
 
-            Collections.sort(list, new Comparator<Map.Entry<String,Double>>()
-            {
+            Collections.sort(list, new Comparator<Map.Entry<String, Double>>() {
                 @Override
-                public int compare(Map.Entry<String,Double> obj1, Map.Entry<String,Double> obj2)
-                {
+                public int compare(Map.Entry<String, Double> obj1, Map.Entry<String, Double> obj2) {
                     return (obj2.getValue()).compareTo(obj1.getValue());
                 }
-            } );
+            });
 
             for (int i = 0; i < list.size(); i++) {
                 timesOfDaySortedKeys.add(list.get(i).getKey());

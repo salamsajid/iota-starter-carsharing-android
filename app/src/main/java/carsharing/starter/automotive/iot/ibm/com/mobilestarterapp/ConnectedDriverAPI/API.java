@@ -1,14 +1,15 @@
 /**
  * Copyright 2016 IBM Corp. All Rights Reserved.
- *
+ * <p>
  * Licensed under the IBM License, a copy of which may be obtained at:
- *
+ * <p>
  * http://www14.software.ibm.com/cgi-bin/weblap/lap.pl?li_formnum=L-DDIN-AEGGZJ&popup=y&title=IBM%20IoT%20for%20Automotive%20Sample%20Starter%20Apps%20%28Android-Mobile%20and%20Server-all%29
- *
+ * <p>
  * You may not use this file except in compliance with the license.
  */
 package carsharing.starter.automotive.iot.ibm.com.mobilestarterapp.ConnectedDriverAPI;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -27,12 +28,15 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class API {
     public static String defaultAppURL = "https://iota-starter-server.mybluemix.net";
     public static String defaultAppGUID = "";
     public static String defaultCustomAuth = ""; // non-MCA server
-//    public static String bmRegion = BMSClient.REGION_US_SOUTH;
+    //    public static String bmRegion = BMSClient.REGION_US_SOUTH;
     public static String customRealm = "custauth";
 
     public static String connectedAppURL = defaultAppURL;
@@ -54,11 +58,23 @@ public class API {
     public static Context context;
     public static SharedPreferences sharedpreferences;
 
-    public API(Context context){
+    private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
+    public static void runInAsyncUIThread(final Runnable task, final Activity activity) {
+        scheduler.schedule(new Runnable() {
+            @Override
+            public void run() {
+                activity.runOnUiThread(task);
+            }
+        }, 0, TimeUnit.MILLISECONDS);
+    }
+
+
+    public API(Context context) {
         this.context = context;
     }
 
-    public static void setURIs(String appURL) {
+    public static void setURIs(final String appURL) {
         carsNearby = appURL + "/user/carsnearby";
         reservation = appURL + "/user/reservation";
         reservations = appURL + "/user/activeReservations";
@@ -82,11 +98,11 @@ public class API {
     public static void doInitialize() {
         sharedpreferences = context.getSharedPreferences("carsharing.starter.automotive.iot.ibm.com.mobilestarterapp.ConnectedDriverAPI", Context.MODE_PRIVATE);
 
-        String appRoute = sharedpreferences.getString("appRoute", "no-appRoute");
-        String appGUID = sharedpreferences.getString("appGUID", "no-appGUID");
-        String customAuth = sharedpreferences.getString("customAuth", "no-customAuth");
+        final String appRoute = sharedpreferences.getString("appRoute", "no-appRoute");
+        final String appGUID = sharedpreferences.getString("appGUID", "no-appGUID");
+        final String customAuth = sharedpreferences.getString("customAuth", "no-customAuth");
 
-        if(appRoute != "no-appRoute"){
+        if (appRoute != "no-appRoute") {
             connectedAppURL = appRoute;
             connectedAppGUID = appGUID == "no-appGUID" ? "" : appGUID;
             connectedCustomAuth = customAuth == "no-customAuth" ? "false" : customAuth;
@@ -123,7 +139,7 @@ public class API {
     public static boolean warningShown() {
         sharedpreferences = context.getSharedPreferences("carsharing.starter.automotive.iot.ibm.com.mobilestarterapp.ConnectedDriverAPI", Context.MODE_PRIVATE);
 
-        boolean warningShown = sharedpreferences.getBoolean("iota-starter-warning-message", false);
+        final boolean warningShown = sharedpreferences.getBoolean("iota-starter-warning-message", false);
 
         if (warningShown) {
             return warningShown;
@@ -137,7 +153,7 @@ public class API {
     public static boolean disclaimerShown(boolean agreed) {
         sharedpreferences = context.getSharedPreferences("carsharing.starter.automotive.iot.ibm.com.mobilestarterapp.ConnectedDriverAPI", Context.MODE_PRIVATE);
 
-        boolean disclaimerShownAndAgreed = sharedpreferences.getBoolean("iota-starter-disclaimer", false);
+        final boolean disclaimerShownAndAgreed = sharedpreferences.getBoolean("iota-starter-disclaimer", false);
 
         if (disclaimerShownAndAgreed) {
             return disclaimerShownAndAgreed;
@@ -171,9 +187,9 @@ public class API {
             int code = 0;
 
             try {
-                URL url = new URL(params[0]);   // params[0] == URL - String
-                String requestType = params[1]; // params[1] == Request Type - String e.g. "GET"
-                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                final URL url = new URL(params[0]);   // params[0] == URL - String
+                final String requestType = params[1]; // params[1] == Request Type - String e.g. "GET"
+                final HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
 
                 Log.i(requestType + " Request", params[0]);
 
@@ -187,10 +203,10 @@ public class API {
                     urlConnection.setDoOutput(true);
 
                     if (params.length > 2 && params[2] != null) { // params[2] == HTTP Parameters Query - String
-                        String query = params[2];
+                        final String query = params[2];
 
-                        OutputStream os = urlConnection.getOutputStream();
-                        BufferedWriter writer = new BufferedWriter(
+                        final OutputStream os = urlConnection.getOutputStream();
+                        final BufferedWriter writer = new BufferedWriter(
                                 new OutputStreamWriter(os, "UTF-8"));
                         writer.write(query);
                         writer.flush();
@@ -202,12 +218,12 @@ public class API {
                     }
 
                     if (params.length > 3) { // params[3] == HTTP Body - String
-                        String httpBody = params[3];
+                        final String httpBody = params[3];
 
                         urlConnection.setRequestProperty("Content-Type", "application/json");
                         urlConnection.setRequestProperty("Content-Length", httpBody.length() + "");
 
-                        OutputStreamWriter wr = new OutputStreamWriter(urlConnection.getOutputStream(), "UTF-8");
+                        final OutputStreamWriter wr = new OutputStreamWriter(urlConnection.getOutputStream(), "UTF-8");
                         wr.write(httpBody);
                         wr.flush();
                         wr.close();
@@ -219,8 +235,8 @@ public class API {
                 try {
                     code = urlConnection.getResponseCode();
 
-                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-                    StringBuilder stringBuilder = new StringBuilder();
+                    final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                    final StringBuilder stringBuilder = new StringBuilder();
 
                     String line;
                     while ((line = bufferedReader.readLine()) != null) {
@@ -230,9 +246,9 @@ public class API {
                     bufferedReader.close();
 
                     try {
-                        JSONArray result = new JSONArray(stringBuilder.toString());
+                        final JSONArray result = new JSONArray(stringBuilder.toString());
 
-                        JSONObject statusCode = new JSONObject();
+                        final JSONObject statusCode = new JSONObject();
                         statusCode.put("statusCode", code + "");
 
                         result.put(statusCode);
@@ -240,12 +256,12 @@ public class API {
                         return result;
                     } catch (JSONException ex) {
                         try {
-                            JSONArray result = new JSONArray();
+                            final JSONArray result = new JSONArray();
 
-                            JSONObject object = new JSONObject(stringBuilder.toString());
+                            final JSONObject object = new JSONObject(stringBuilder.toString());
                             result.put(object);
 
-                            JSONObject statusCode = new JSONObject();
+                            final JSONObject statusCode = new JSONObject();
                             statusCode.put("statusCode", code);
                             Log.d("Responded With", code + "");
 
@@ -253,9 +269,9 @@ public class API {
 
                             return result;
                         } catch (JSONException exc) {
-                            JSONArray result = new JSONArray();
+                            final JSONArray result = new JSONArray();
 
-                            JSONObject object = new JSONObject();
+                            final JSONObject object = new JSONObject();
                             object.put("result", stringBuilder.toString());
 
                             result.put(object);
@@ -269,9 +285,9 @@ public class API {
             } catch (Exception e) {
                 Log.e("ERROR", e.getMessage(), e);
 
-                JSONArray result = new JSONArray();
+                final JSONArray result = new JSONArray();
 
-                JSONObject statusCode = new JSONObject();
+                final JSONObject statusCode = new JSONObject();
 
                 try {
                     statusCode.put("statusCode", code);
@@ -290,7 +306,7 @@ public class API {
         protected void onPostExecute(JSONArray result) {
             super.onPostExecute(result);
 
-            if(this.taskListener != null) {
+            if (this.taskListener != null) {
                 try {
                     this.taskListener.postExecute(result);
                 } catch (JSONException e) {

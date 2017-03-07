@@ -1,10 +1,10 @@
 /**
  * Copyright 2016 IBM Corp. All Rights Reserved.
- *
+ * <p>
  * Licensed under the IBM License, a copy of which may be obtained at:
- *
+ * <p>
  * http://www14.software.ibm.com/cgi-bin/weblap/lap.pl?li_formnum=L-DDIN-AEGGZJ&popup=y&title=IBM%20IoT%20for%20Automotive%20Sample%20Starter%20Apps%20%28Android-Mobile%20and%20Server-all%29
- *
+ * <p>
  * You may not use this file except in compliance with the license.
  */
 package carsharing.starter.automotive.iot.ibm.com.mobilestarterapp;
@@ -13,9 +13,9 @@ import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -37,13 +37,13 @@ public class FirstPage extends AppCompatActivity {
 
     private final int INITIAL_PERMISSIONS = 000;
 
-    Map<String, String> permissions = new HashMap<>();
-    ArrayList<String> permissionNeeded = new ArrayList<>();
+    final Map<String, String> permissions = new HashMap<>();
+    final ArrayList<String> permissionNeeded = new ArrayList<>();
 
     private boolean permissionsGranted = false;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_first_page);
 
@@ -81,8 +81,8 @@ public class FirstPage extends AppCompatActivity {
             }
 
             if (permissionNeeded.size() > 0) {
-                Object[] tempObjectArray = permissionNeeded.toArray();
-                String[] permissionsArray = Arrays.copyOf(tempObjectArray, tempObjectArray.length, String[].class);
+                final Object[] tempObjectArray = permissionNeeded.toArray();
+                final String[] permissionsArray = Arrays.copyOf(tempObjectArray, tempObjectArray.length, String[].class);
 
                 requestPermissions(permissionsArray, INITIAL_PERMISSIONS);
             } else {
@@ -90,7 +90,7 @@ public class FirstPage extends AppCompatActivity {
             }
         } else {
             if (!API.warningShown()) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                final AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder
                         .setTitle("Warning")
                         .setMessage("This app requires permissions to your Locations and Storage settings.\n\n" +
@@ -106,7 +106,7 @@ public class FirstPage extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
+    public void onRequestPermissionsResult(final int requestCode, final String[] permissions, final int[] results) {
         switch (requestCode) {
             case INITIAL_PERMISSIONS:
                 if (results[0] == PackageManager.PERMISSION_GRANTED) {
@@ -134,7 +134,7 @@ public class FirstPage extends AppCompatActivity {
         Log.i("Button Clicked", "Specify Server");
 
         if (permissionsGranted) {
-            Intent intent = new Intent(this, SpecifyServer.class);
+            final Intent intent = new Intent(this, SpecifyServer.class);
             startActivity(intent);
         } else {
             needPermissions();
@@ -158,20 +158,20 @@ public class FirstPage extends AppCompatActivity {
 
         if (permissionsGranted) {
             if (!API.disclaimerShown(false)) {
-                DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                final DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int choice) {
                         switch (choice) {
                             case DialogInterface.BUTTON_POSITIVE:
                                 API.disclaimerShown(true);
 
-                                Intent intent = new Intent(view.getContext(), AnalyzeTabNavigation.class);
+                                final Intent intent = new Intent(view.getContext(), AnalyzeTabNavigation.class);
                                 startActivity(intent);
 
                                 break;
 
                             case DialogInterface.BUTTON_NEGATIVE:
-                                Toast toast = Toast.makeText(view.getContext(), "Cannot use \"Analyze My Driving\" without agreeing to the disclaimer", Toast.LENGTH_SHORT);
+                                final Toast toast = Toast.makeText(view.getContext(), "Cannot use \"Analyze My Driving\" without agreeing to the disclaimer", Toast.LENGTH_SHORT);
                                 toast.show();
 
                                 break;
@@ -181,7 +181,7 @@ public class FirstPage extends AppCompatActivity {
 
                 final InputStream is = getResources().getAssets().open("LICENSE");
                 String line;
-                StringBuffer message = new StringBuffer();
+                final StringBuffer message = new StringBuffer();
                 BufferedReader br = new BufferedReader(new InputStreamReader(is));
                 try {
                     br = new BufferedReader(new InputStreamReader(is));
@@ -194,7 +194,7 @@ public class FirstPage extends AppCompatActivity {
                     if (br != null) br.close();
                 }
 
-                AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
+                final AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
                 builder
                         .setTitle("Disclaimer")
                         .setMessage(message)
@@ -202,7 +202,7 @@ public class FirstPage extends AppCompatActivity {
                         .setPositiveButton("Agree", dialogClickListener)
                         .show();
             } else {
-                Intent intent = new Intent(view.getContext(), AnalyzeTabNavigation.class);
+                final Intent intent = new Intent(view.getContext(), AnalyzeTabNavigation.class);
                 startActivity(intent);
             }
         } else {

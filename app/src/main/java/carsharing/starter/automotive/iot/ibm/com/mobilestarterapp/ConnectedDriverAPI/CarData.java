@@ -1,10 +1,10 @@
 /**
  * Copyright 2016 IBM Corp. All Rights Reserved.
- *
+ * <p>
  * Licensed under the IBM License, a copy of which may be obtained at:
- *
+ * <p>
  * http://www14.software.ibm.com/cgi-bin/weblap/lap.pl?li_formnum=L-DDIN-AEGGZJ&popup=y&title=IBM%20IoT%20for%20Automotive%20Sample%20Starter%20Apps%20%28Android-Mobile%20and%20Server-all%29
- *
+ * <p>
  * You may not use this file except in compliance with the license.
  */
 package carsharing.starter.automotive.iot.ibm.com.mobilestarterapp.ConnectedDriverAPI;
@@ -23,12 +23,10 @@ public class CarData implements Serializable {
 
     public static LatLng coordinate;
 
-    public CarData(JSONObject carData) throws JSONException {
+    public CarData(final JSONObject carData) throws JSONException {
         deviceID = carData.getString("deviceID");
-        if (carData.has("deviceType")) {
-            deviceType = carData.getString("deviceType");
-        }
-        lastUpdateTime = carData.getInt("lastUpdateTime");
+        deviceType = carData.has("deviceType") ? carData.getString("deviceType") : null;
+        lastUpdateTime = carData.has("lastUpdateTime") ? carData.getInt("lastUpdateTime") : 0;
 
         if (carData.has("lat") && carData.has("lng") && carData.get("lat") != null && carData.get("lng") != null) {
             lat = carData.getDouble("lat");
@@ -36,24 +34,14 @@ public class CarData implements Serializable {
 
             coordinate = new LatLng(lat, lng);
         }
-
         name = carData.getString("name");
-
-        if (carData.has("status")) {
-            status = carData.getString("status");
-        }
-        if (carData.has("distance")) {
-            distance = carData.getInt("distance");
-        }
-
-        if (carData.has("license")) {
-            license = carData.getString("license");
-        }
-
+        status = carData.has("status") ? carData.getString("status") : null;
+        distance = carData.has("distance") ? carData.getInt("distance") : 0;
+        license = carData.has("license") ? carData.getString("license") : null;
         title = name;
 
         if (carData.has("model")) {
-            JSONObject model = carData.getJSONObject("model");
+            final JSONObject model = carData.getJSONObject("model");
 
             makeModel = model.getString("makeModel");
             year = model.getInt("year");
@@ -62,12 +50,8 @@ public class CarData implements Serializable {
             hourlyRate = model.getInt("hourlyRate");
             dailyRate = model.getInt("dailyRate");
             thumbnailURL = model.getString("thumbnailURL");
-            if(model.has("type")) {
-                type = model.getString("type");
-            }
-            if(model.has("drive")) {
-                drive = model.getString("drive");
-            }
+            type = model.has("type") ? model.getString("type") : null;
+            drive = model.has("drive") ? model.getString("drive") : null;
         }
 
 //        if let recommendation = dictionary["recommendation"] {

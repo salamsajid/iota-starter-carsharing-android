@@ -1,10 +1,10 @@
 /**
  * Copyright 2016 IBM Corp. All Rights Reserved.
- *
+ * <p>
  * Licensed under the IBM License, a copy of which may be obtained at:
- *
+ * <p>
  * http://www14.software.ibm.com/cgi-bin/weblap/lap.pl?li_formnum=L-DDIN-AEGGZJ&popup=y&title=IBM%20IoT%20for%20Automotive%20Sample%20Starter%20Apps%20%28Android-Mobile%20and%20Server-all%29
- *
+ * <p>
  * You may not use this file except in compliance with the license.
  */
 package carsharing.starter.automotive.iot.ibm.com.mobilestarterapp.Profile;
@@ -25,23 +25,24 @@ import carsharing.starter.automotive.iot.ibm.com.mobilestarterapp.ConnectedDrive
 import carsharing.starter.automotive.iot.ibm.com.mobilestarterapp.R;
 
 public class ProfileDataAdapter extends BaseAdapter {
-    private Context mContext;
-    private LayoutInflater inflater;
+    final private Context mContext;
+    final private LayoutInflater inflater;
 
-    private ArrayList<DriverStatistics> data;
-    private ArrayList<ScoringBehavior> behaviorData;
-    private DriverStatistics.TimeRange timeRangeData;
-    private DriverStatistics.SpeedPattern trafficConditionsData;
-    private DriverStatistics.RoadType roadTypeData;
+    final private ArrayList<DriverStatistics> data;
+    final private ArrayList<ScoringBehavior> behaviorData;
+    final private DriverStatistics.TimeRange timeRangeData;
+    final private DriverStatistics.SpeedPattern trafficConditionsData;
+    final private DriverStatistics.RoadType roadTypeData;
 
 
     // Integers that'll hold the number of behaviors each section will show
-    private int behaviors;
-    private int timeRanges;
-    private int trafficConditions;
-    private int roadTypes;
+    final private int behaviors;
+    final private int timeRanges;
+    final private int trafficConditions;
+    final private int roadTypes;
 
-    public ProfileDataAdapter(Context context, ArrayList<DriverStatistics> stats, ArrayList<ScoringBehavior> behaviorArray, DriverStatistics.TimeRange timeRange, DriverStatistics.SpeedPattern trafficCondition, DriverStatistics.RoadType roadType) {
+    public ProfileDataAdapter(final Context context, final ArrayList<DriverStatistics> stats, final ArrayList<ScoringBehavior> behaviorArray,
+                              final DriverStatistics.TimeRange timeRange, final DriverStatistics.SpeedPattern trafficCondition, final DriverStatistics.RoadType roadType) {
         mContext = context;
 
         data = stats;
@@ -61,7 +62,9 @@ public class ProfileDataAdapter extends BaseAdapter {
     }
 
     @Override
-    public int getCount() { return behaviors + timeRanges + trafficConditions + roadTypes; }
+    public int getCount() {
+        return behaviors + timeRanges + trafficConditions + roadTypes;
+    }
 
     @Override
     public Object getItem(int index) {
@@ -74,8 +77,8 @@ public class ProfileDataAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        View rowView = inflater.inflate(R.layout.list_item_profile, parent, false);
+    public View getView(final int position, final View convertView, final ViewGroup parent) {
+        final View rowView = inflater.inflate(R.layout.list_item_profile, parent, false);
 
         String key = "";
         String value = "";
@@ -83,14 +86,14 @@ public class ProfileDataAdapter extends BaseAdapter {
         Double totalDistance = 0.0;
         Map<String, Double> dict = new HashMap<String, Double>();
 
-        TextView sectionTitle = (TextView) rowView.findViewById(R.id.sectionTitle);
-        TextView behaviorTitle = (TextView) rowView.findViewById(R.id.behaviorTitle);
-        TextView behaviorOccurences = (TextView) rowView.findViewById(R.id.behaviorOccurences);
+        final TextView sectionTitle = (TextView) rowView.findViewById(R.id.sectionTitle);
+        final TextView behaviorTitle = (TextView) rowView.findViewById(R.id.behaviorTitle);
+        final TextView behaviorOccurences = (TextView) rowView.findViewById(R.id.behaviorOccurences);
 
         int section = 0;
 
         // FIND OUT WHAT SECTION THIS ITEM BELONGS TO OUT OF THE 4
-        if (position < behaviors);
+        if (position < behaviors) ;
         else if ((position - behaviors) < timeRanges) section = 1;
         else if ((position - behaviors - timeRanges) < trafficConditions) section = 2;
         else section = 3;
@@ -106,9 +109,9 @@ public class ProfileDataAdapter extends BaseAdapter {
                 key = behaviorData.get(position).name;
                 value = behaviorData.get(position).count + "";
 
-                Double totalPointsPerBehavior = (double) (100 / behaviors);
-                Double pointsForThisBehavior = (behaviorData.get(position).score / 100) *  totalPointsPerBehavior;
-                int pointsDeducted = (int) Math.round(pointsForThisBehavior - totalPointsPerBehavior);
+                final Double totalPointsPerBehavior = (double) (100 / behaviors);
+                final Double pointsForThisBehavior = (behaviorData.get(position).score / 100) * totalPointsPerBehavior;
+                final int pointsDeducted = (int) Math.round(pointsForThisBehavior - totalPointsPerBehavior);
 
                 value += " (" + pointsDeducted + ")";
 
