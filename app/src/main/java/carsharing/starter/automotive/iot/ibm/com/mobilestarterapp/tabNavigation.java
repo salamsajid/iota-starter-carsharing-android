@@ -9,6 +9,7 @@
  */
 package carsharing.starter.automotive.iot.ibm.com.mobilestarterapp;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -16,6 +17,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MenuItem;
 
 import java.util.ArrayList;
@@ -48,6 +50,29 @@ public class tabNavigation extends AppCompatActivity {
 
         tabBar = (TabLayout) findViewById(R.id.tabBar);
 
+        final Intent i = getIntent();
+        final String name = i.getStringExtra("next_activity");
+        int position = 0;
+        if (name != null) {
+            if ("search".equals(name)) {
+                position = 0;
+            } else if ("reservations".equals(name)) {
+                position = 1;
+            } else if ("profile".equals(name)) {
+                position = 2;
+            } else if ("trips".equals(name)) {
+                position = 3;
+            } else {
+                Log.e("Error", "unknown fragment name: " + name);
+            }
+        }
+        // System.out.println("NEXT " + name + " " + position);
+
+        initalizeFragments();
+        getTabTitle(position);
+        getItem(position);
+
+        // adding this listener must be after getTabTitle() and getItem(); otherwise this listener calls getItems() duplicatedly
         tabBar.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
@@ -62,9 +87,6 @@ public class tabNavigation extends AppCompatActivity {
             public void onTabReselected(TabLayout.Tab tab) {
             }
         });
-
-        initalizeFragments();
-        getTabTitle();
     }
 
     @Override
@@ -104,11 +126,14 @@ public class tabNavigation extends AppCompatActivity {
         ft.commit();
     }
 
-    private void getTabTitle() {
+    private void getTabTitle(int positionSelected) {
+        if (positionSelected < 0 || positionSelected >= tabTitles.size()) {
+            positionSelected = 0;
+        }
         for (int i = 0; i < tabTitles.size(); i++) {
             final String text = tabTitles.get(i);
             final TabLayout.Tab tab = tabBar.newTab();
-            if (i == 0) {
+            if (i == positionSelected) {
                 tabBar.addTab(tab.setText(text), true);
             } else {
                 tabBar.addTab(tab.setText(text));

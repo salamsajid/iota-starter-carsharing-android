@@ -68,6 +68,8 @@ public class CarDetails extends AppCompatActivity {
                 formattedAddress = addressArray.get(0).getAddressLine(0);
             } catch (IOException e) {
                 e.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
 
             final CarDetailsAdapter adapter = new CarDetailsAdapter(this, carData, formattedAddress);

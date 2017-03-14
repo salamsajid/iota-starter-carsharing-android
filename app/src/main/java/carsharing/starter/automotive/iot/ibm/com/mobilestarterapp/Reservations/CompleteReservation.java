@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -39,8 +40,6 @@ import carsharing.starter.automotive.iot.ibm.com.mobilestarterapp.R;
 import carsharing.starter.automotive.iot.ibm.com.mobilestarterapp.tabNavigation;
 
 public class CompleteReservation extends AppCompatActivity {
-    public static Boolean isUnlocked = false;
-    public static Boolean userUnlocked = false;
 
     private ReservationsData reservationData;
     private ReservationsData reservation;
@@ -49,6 +48,8 @@ public class CompleteReservation extends AppCompatActivity {
 
     private Button unlockButton;
     private Button cancelButton;
+
+    private boolean unlocked = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,7 +95,27 @@ public class CompleteReservation extends AppCompatActivity {
     }
 
     @Override
+    public void onBackPressed() {
+        if (unlocked) {
+            toggleLockUnlock();
+        }
+        super.onBackPressed();
+    }
+
+    @Override
+    public void onStop() {
+        if (unlocked) {
+            toggleLockUnlock();
+        }
+        super.onStop();
+    }
+
+
+    @Override
     public boolean onSupportNavigateUp() {
+        if (unlocked) {
+            toggleLockUnlock();
+        }
         finish();
         return true;
     }
@@ -105,14 +126,18 @@ public class CompleteReservation extends AppCompatActivity {
         return formattedCal.format(cal.getTime());
     }
 
-    public void unlockCar(View view) {
+    public void unlockCar(final View view) {
+        toggleLockUnlock();
+    }
+
+    private void toggleLockUnlock() {
         final String url = API.carControl;
 
         final String reservationId = reservationData._id;
         final String[] command = {new String()};
         command[0] = "lock";
 
-        if (reservation == null || (reservation.carDetails.status.equals("Locked") && !isUnlocked)) {
+        if (reservation == null || ("Locked".equals(reservation.carDetails.status))) {
             command[0] = "unlock";
         }
 
@@ -139,25 +164,37 @@ public class CompleteReservation extends AppCompatActivity {
                         reservation = reservations.get(0);
                     }
 
+                    final ActionBar supportActionBar = getSupportActionBar();
                     switch (statusCode) {
                         case 200:
-                            if (command[0].equals("lock")) {
+                            if ("lock".equals(command[0])) {
                                 unlockButton.setText("Unlock the car");
-
+                                supportActionBar.setTitle("Drive completed.");
+                                unlocked = false;
                                 break;
                             } else {
                                 unlockButton.setText("Lock the car");
 
                                 cancelButton.setEnabled(true);
 
-                                final Toast toast = Toast.makeText(getApplicationContext(), "Enjoy your ride and drive safe", Toast.LENGTH_SHORT);
+                                final Toast toast = Toast.makeText(getApplicationContext(), "Enjoy your ride and drive safe.", Toast.LENGTH_SHORT);
                                 toast.show();
 
                                 setLabelsAccordingToStatus();
 
+                                supportActionBar.setTitle("Simulating your drive...");
+                                API.runInAsyncUIThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        final Toast toast = Toast.makeText(getApplicationContext(), "Press LOCK THE CAR button to complete driving.", Toast.LENGTH_SHORT);
+                                        toast.show();
+                                    }
+                                }, CompleteReservation.this, 1000);
+                                unlocked = true;
                                 break;
                             }
                         default:
+                            supportActionBar.setTitle("Error in simulating drive...");
                             Log.e("Unlock Car", "unknown status code on unlock car action");
 
                             break;
@@ -179,25 +216,25 @@ public class CompleteReservation extends AppCompatActivity {
 
     public void setLabelsAccordingToStatus() {
         if (reservation != null) {
-            if (reservation.status.equals("active")) {
+            if ("active".equals(reservation.status)) {
                 cancelButton.setText("Cancel Reservation");
             } else {
                 cancelButton.setText("Complete Reservation");
             }
 
-            if (reservation.carDetails.status.equals("Locked")) {
+            if ("Locked".equals(reservation.carDetails.status)) {
                 unlockButton.setText("Unlock the car");
             } else {
                 unlockButton.setText("Lock the car");
             }
         } else {
-            if (reservationData.status.equals("active")) {
+            if ("active".equals(reservationData.status)) {
                 cancelButton.setText("Cancel Reservation");
             } else {
                 cancelButton.setText("Complete Reservation");
             }
 
-            if (reservationData.carDetails.status.equals("Locked")) {
+            if ("Locked".equals(reservationData.carDetails.status)) {
                 unlockButton.setText("Unlock the car");
             } else {
                 unlockButton.setText("Lock the car");
@@ -215,19 +252,29 @@ public class CompleteReservation extends AppCompatActivity {
         final View v = view;
 
         try {
-            if (reservation.status.equals(null) || reservation.status.equals("active")) {
+            if (reservation.status.equals(null) || "active".equals(reservation.status)) {
                 final API.doRequest task = new API.doRequest(new API.doRequest.TaskListener() {
                     @Override
-                    public void postExecute(JSONArray result) {
+                    public void postExecute(JSONArray result) throws JSONException {
+
                         Log.i("Cancel Reservation", result.toString());
 
-                        final Toast toast = Toast.makeText(getApplicationContext(), "Reservation Successfully Cancelled!", Toast.LENGTH_SHORT);
-                        toast.show();
+                        final JSONObject serverResponse = result.getJSONObject(result.length() - 1);
+                        final int statusCode = serverResponse.getInt("statusCode");
+                        if (statusCode == 200) {
+                            final Toast toast = Toast.makeText(getApplicationContext(), "Reservation successfully cancelled!", Toast.LENGTH_SHORT);
+                            toast.show();
 
-                        Reservations.userReserved = true;
+                            Reservations.userReserved = true;
 
-                        final Intent tabActivity = new Intent(v.getContext(), tabNavigation.class);
-                        startActivity(tabActivity);
+                            final Intent tabActivity = new Intent(v.getContext(), tabNavigation.class);
+                            tabActivity.putExtra("next_activity", "reservations");
+
+                            startActivity(tabActivity);
+                        } else {
+                            final Toast toast = Toast.makeText(getApplicationContext(), "Reservation cannot be canceled. You may unlock the car and complete it.", Toast.LENGTH_SHORT);
+                            toast.show();
+                        }
                     }
                 });
 
@@ -235,16 +282,32 @@ public class CompleteReservation extends AppCompatActivity {
             } else {
                 final API.doRequest task = new API.doRequest(new API.doRequest.TaskListener() {
                     @Override
-                    public void postExecute(JSONArray result) {
+                    public void postExecute(JSONArray result) throws JSONException {
+
                         Log.i("Complete Reservation", result.toString());
 
-                        final Toast toast = Toast.makeText(getApplicationContext(), "Reservation Successfully Completed!", Toast.LENGTH_SHORT);
-                        toast.show();
+                        final JSONObject serverResponse = result.getJSONObject(result.length() - 1);
+                        final int statusCode = serverResponse.getInt("statusCode");
+                        if (statusCode == 200) {
+                            final Toast toast = Toast.makeText(getApplicationContext(), "Reservation successfully completed!", Toast.LENGTH_SHORT);
+                            toast.show();
 
-                        Reservations.userReserved = true;
+                            Reservations.userReserved = true;
 
-                        final Intent tabActivity = new Intent(v.getContext(), tabNavigation.class);
-                        startActivity(tabActivity);
+                            final Intent tabActivity = new Intent(v.getContext(), tabNavigation.class);
+                            tabActivity.putExtra("next_activity", "trips");
+
+                            startActivity(tabActivity);
+
+                        } else {
+                            final Toast toast = Toast.makeText(getApplicationContext(), "Complete reservation failed.", Toast.LENGTH_SHORT);
+                            toast.show();
+
+                            final Intent tabActivity = new Intent(v.getContext(), tabNavigation.class);
+                            tabActivity.putExtra("next_activity", "reservations");
+
+                            startActivity(tabActivity);
+                        }
                     }
                 });
 

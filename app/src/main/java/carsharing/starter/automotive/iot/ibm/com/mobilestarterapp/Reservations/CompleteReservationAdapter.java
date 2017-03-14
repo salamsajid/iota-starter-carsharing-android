@@ -99,6 +99,8 @@ public class CompleteReservationAdapter extends BaseAdapter {
 
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         return rowView;

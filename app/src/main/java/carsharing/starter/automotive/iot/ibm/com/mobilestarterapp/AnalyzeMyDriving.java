@@ -87,9 +87,9 @@ public class AnalyzeMyDriving extends Fragment implements OnMapReadyCallback, Lo
 
     private ImageButton startDriving;
 
-    LocationManager locationManager;
-    Location location;
-    String provider;
+    private LocationManager locationManager;
+    private Location location;
+    private String provider;
 
     private View view = null;
 
@@ -98,43 +98,64 @@ public class AnalyzeMyDriving extends Fragment implements OnMapReadyCallback, Lo
 
     private boolean networkIntentNeeded = false;
 
-    private String speedMessage = "";
+    private String speedMessage = "SPEED";
     private int transmissionCount = 0;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.activity_analyze_my_driving, container, false);
 
+        // Get Google Maps Setup
         final SupportMapFragment mapFragment = (SupportMapFragment) this.getChildFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
         final AppCompatActivity activity = (AppCompatActivity) getActivity();
+
+        // Retrieve a refrence of the location manager on Android from the location service
         locationManager = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
+        // Get the best location provider available from the location manager
         provider = locationManager.getBestProvider(new Criteria(), false);
 
+        // Setting up the app action bar at the top
         final ActionBar supportActionBar = activity.getSupportActionBar();
+        // Show the back arrow when user navigates to other screens than home
         supportActionBar.setDisplayHomeAsUpEnabled(true);
         supportActionBar.setTitle("Setting up...");
 
+        // Grab the "Start Driving" image from the "res/drawable" folder
+        // And create an image button using it
         startDriving = (ImageButton) view.findViewById(R.id.imageButton);
+        // When user clicks on the button, run this function
         startDriving.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                // Log to the console
                 Log.i("Button Clicked", "Start Driving");
 
+                // If the user hasn't started driving
                 if (!startedDriving) {
-                    supportActionBar.setTitle("Preparing for the trip...");
+                    supportActionBar.setTitle("Preparing for this trip...");
+
+                    // The UI thread solely deals with the user interface and can execute tasks on it
                     API.runInAsyncUIThread(new Runnable() {
                         @Override
                         public void run() {
                             if (startDrive(deviceID)) {
+                                // Keep the screen Awake (do not lock automatically or dim)
+                                // https://developer.android.com/training/scheduling/wakelock.html
                                 AnalyzeMyDriving.this.getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
                                 reserveCar();
+
+                                // Change the "Start Driving" to "End Driving"
                                 startDriving.setImageResource(R.drawable.enddriving);
+
                                 transmissionCount = 0;
+
                                 supportActionBar.setTitle("Please start driving safely.");
                             } else {
-                                Toast toast = Toast.makeText(activity.getApplicationContext(), "Failed to connect to IoT Platform.", Toast.LENGTH_SHORT);
-                                toast.show();
+                                // Show a toast to the user
+                                Toast.makeText(activity.getApplicationContext(), "Failed to connect to IoT Platform.", Toast.LENGTH_SHORT)
+                                        .show();
 
                                 supportActionBar.setTitle("Check server connection.");
                             }
@@ -142,12 +163,20 @@ public class AnalyzeMyDriving extends Fragment implements OnMapReadyCallback, Lo
                     }, activity);
                 } else {
                     startedDriving = false;
+
                     supportActionBar.setTitle("Completing the trip...");
+
+                    // The UI thread solely deals with the user interface and can execute tasks on it
                     API.runInAsyncUIThread(new Runnable() {
                         @Override
                         public void run() {
+                            // Complete the reservation on the server
                             completeReservation(reservationId[0], false);
+
+                            // Change the button image back to "Start Driving"
                             startDriving.setImageResource(R.drawable.startdriving);
+
+                            // No longer need to keep the screen awake
                             AnalyzeMyDriving.this.getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                         }
                     }, activity);
@@ -159,9 +188,12 @@ public class AnalyzeMyDriving extends Fragment implements OnMapReadyCallback, Lo
         return view;
     }
 
+
+    // Call this function when the Google Map is loaded and ready
     @Override
     public void onMapReady(final GoogleMap googleMap) {
         mMap = googleMap;
+
         if (this.view != null) {
             getLocation(this.view);
         }
@@ -171,31 +203,39 @@ public class AnalyzeMyDriving extends Fragment implements OnMapReadyCallback, Lo
         if (deviceClient == null) {
             return false;
         }
+
         if (reservationForMyDevice(deviceId)) {
             userUnlocked = true;
+
             if (tripID == null) {
+                // Generate a random UUID and assign it to this trip's ID
                 tripID = UUID.randomUUID().toString();
             }
         }
+
         return true;
     }
 
     public void stopDrive(final String deviceId) {
+        // If the reservation belongs to the current user
         if (reservationForMyDevice(deviceId)) {
             userUnlocked = false;
         }
     }
 
     public void completeDrive(final String deviceId) {
+        // If the reservation belongs to the current user
         if (reservationForMyDevice(deviceId)) {
             tripID = null;  // clear the tripID
         }
     }
 
     public static String getTripId(final String deviceId) {
+        // If the reservation belongs to the current user
         if (reservationForMyDevice(deviceId)) {
             return tripID;
         }
+
         return null;
     }
 
@@ -211,12 +251,16 @@ public class AnalyzeMyDriving extends Fragment implements OnMapReadyCallback, Lo
         }
     }
 
+    // If anything takes the user away from the app (e.g. receiving a phone call)
+    // When they resume using the app, request location updates from the location provider
     @Override
     public void onResume() {
         super.onResume();
         requestLocationUpdates(true);
     }
 
+    // If anything takes the user away from the app (e.g. receiving a phone call)
+    // Stop receiving location updates
     @Override
     public void onPause() {
         super.onPause();
@@ -227,14 +271,18 @@ public class AnalyzeMyDriving extends Fragment implements OnMapReadyCallback, Lo
         if (!request && locationManager != null) {
             locationManager.removeUpdates(this);
         }
+
         final FragmentActivity activity = getActivity();
         if (activity == null) {
             return;
         }
+
+        // Check for user permission to retrieve accurate and coarse location
         if (ActivityCompat.checkSelfPermission(activity.getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(activity.getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
+
         if (request && locationManager != null) {
             locationManager.requestLocationUpdates(provider, 2000, 1.0f, this);
         }
@@ -251,6 +299,9 @@ public class AnalyzeMyDriving extends Fragment implements OnMapReadyCallback, Lo
         final FragmentActivity activity = getActivity();
         if (activity == null) {
             Log.e("getAccurateLocation", "do nothing as getActivity()==null");
+            if (locationManager != null) {
+                requestLocationUpdates(false);
+            }
             return;
         }
         final ConnectivityManager connectivityManager = (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -357,26 +408,37 @@ public class AnalyzeMyDriving extends Fragment implements OnMapReadyCallback, Lo
     }
 
     private void createDeviceClient() {
+        if (deviceClient != null) {
+            // already got credentials
+            return;
+        }
         final String url = API.credentials + "/" + FirstPage.mobileAppDeviceId + "?owneronly=true";
         try {
             API.doRequest task = new API.doRequest(new API.doRequest.TaskListener() {
                 @Override
                 public void postExecute(JSONArray result) throws JSONException, MqttException {
+                    final JSONObject serverResponse = result.getJSONObject(result.length() - 1);
+                    final int statusCode = serverResponse.getInt("statusCode");
+
                     result.remove(result.length() - 1);
 
                     final FragmentActivity activity = getActivity();
                     final ActionBar supportActionBar = ((AppCompatActivity) activity).getSupportActionBar();
-                    if (deviceClient != null) {
-                        // already got credentials
+
+                    if (statusCode == 200 && result.length() > 0) {
+                        supportActionBar.setTitle("Press Start Driving when ready.");
+
+                    } else if (statusCode == 409) {
+                        Toast.makeText(activity.getApplicationContext(), "Error: vehicle already registered inconsistently. Ask admin to remove it. And try again.", Toast.LENGTH_LONG).show();
+                        supportActionBar.setTitle("Error: Vehicle already exist.");
+                        behaviorDemo = false;
                         return;
-                    }
-                    if (result.length() == 0) {
-                        Toast.makeText(activity.getApplicationContext(), "MQTT - Failed to get credentials. You may have exceeded the free plan limit.", Toast.LENGTH_LONG).show();
-                        supportActionBar.setTitle("An error occurred.");
+                    } else {
+                        Toast.makeText(activity.getApplicationContext(), "Error: Failed to get credentials.", Toast.LENGTH_LONG).show();
+                        supportActionBar.setTitle("Error: get credentials: " + statusCode);
                         behaviorDemo = false;
                         return;
                     }
-                    supportActionBar.setTitle("Press Start Driving when ready.");
 
                     final JSONObject deviceCredentials = result.getJSONObject(0);
                     try {

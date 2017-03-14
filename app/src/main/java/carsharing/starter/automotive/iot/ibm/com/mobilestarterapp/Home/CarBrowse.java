@@ -24,6 +24,7 @@ import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -80,9 +81,9 @@ public class CarBrowse extends Fragment implements OnMapReadyCallback, LocationL
             {48.176656, 11.553583}
     };
 
-    LocationManager locationManager;
-    Location location;
-    String provider;
+    private LocationManager locationManager;
+    private Location location;
+    private String provider;
 
     private final int GPS_INTENT = 000;
     private final int SETTINGS_INTENT = 001;
@@ -117,6 +118,7 @@ public class CarBrowse extends Fragment implements OnMapReadyCallback, LocationL
                     result.remove(result.length() - 1);
 
                     final FragmentActivity activity = getActivity();
+                    final ActionBar supportActionBar = ((AppCompatActivity) activity).getSupportActionBar();
                     if (statusCode == 200) {
                         final ListView listView = (ListView) getView().findViewById(R.id.listView);
 
@@ -158,16 +160,24 @@ public class CarBrowse extends Fragment implements OnMapReadyCallback, LocationL
                             }
                         });
 
-                        final String title = (carsArray.size() == 1) ? "1 car found." : carsArray.size() + " cars found.";
-                        ((AppCompatActivity) activity).getSupportActionBar().setTitle(title);
+                        if (carsArray.size() == 0) {
+                            final Toast toast = Toast.makeText(activity.getApplicationContext(), "No car available in this area. Maybe Free Plan limitation and you may ask administrator to delete registered cars.", Toast.LENGTH_LONG);
+                            toast.show();
+                            supportActionBar.setTitle("No car available.");
+                        } else {
+                            final String title = (carsArray.size() == 1) ? "1 car found." : carsArray.size() + " cars found.";
+                            supportActionBar.setTitle(title);
+                        }
 
                         Log.i("Car Data", result.toString());
                     } else if (statusCode == 500) {
-                        final Toast toast = Toast.makeText(activity.getApplicationContext(), "There are too many devices registered with the server, please delete them and try again!", Toast.LENGTH_LONG);
+                        final Toast toast = Toast.makeText(activity.getApplicationContext(), "A server internal error received. Ask your administrator.", Toast.LENGTH_LONG);
                         toast.show();
+                        supportActionBar.setTitle("Error: Server internal error.");
                     } else {
-                        final Toast toast = Toast.makeText(activity.getApplicationContext(), "Error: Unable to Connect to the Server", Toast.LENGTH_LONG);
+                        final Toast toast = Toast.makeText(activity.getApplicationContext(), "Error: Unable to connect to server.", Toast.LENGTH_LONG);
                         toast.show();
+                        supportActionBar.setTitle("Error: Not connected to server.");
                     }
                 }
             });
@@ -204,7 +214,7 @@ public class CarBrowse extends Fragment implements OnMapReadyCallback, LocationL
                 }
                 ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(title);
 
-                final Toast toast = Toast.makeText(getActivity().getApplicationContext(), "Long tap toggles location setting. Go back main menu and come back with new location!", Toast.LENGTH_LONG);
+                final Toast toast = Toast.makeText(getActivity().getApplicationContext(), "Long tap toggles location setting. Go back main menu and come again for the new location!", Toast.LENGTH_LONG);
                 toast.show();
             }
         });
@@ -224,24 +234,23 @@ public class CarBrowse extends Fragment implements OnMapReadyCallback, LocationL
     @Override
     public void onResume() {
         super.onResume();
-
-        if (ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
 
-        locationManager.requestLocationUpdates(provider, 500, 1, this);
+        locationManager.requestLocationUpdates(provider, 2000, 1.0f, this);
     }
 
     @Override
     public void onPause() {
         super.onPause();
 
-
-        if (ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        locationManager.removeUpdates(this);
+        if (ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
-
-        locationManager.removeUpdates(this);
     }
 
     @Override

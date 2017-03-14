@@ -89,6 +89,9 @@ public class CreateReservation extends AppCompatActivity {
 
         final String query = builder.build().getEncodedQuery();
 
+        final Toast toast = Toast.makeText(getApplicationContext(), "Making reservation...", Toast.LENGTH_SHORT);
+        toast.show();
+
         try {
             final API.doRequest task = new API.doRequest(new API.doRequest.TaskListener() {
                 @Override
@@ -102,6 +105,8 @@ public class CreateReservation extends AppCompatActivity {
                         Reservations.userReserved = true;
 
                         final Intent tabActivity = new Intent(v.getContext(), tabNavigation.class);
+                        tabActivity.putExtra("next_activity", "reservations");
+
                         startActivity(tabActivity);
                     }
 

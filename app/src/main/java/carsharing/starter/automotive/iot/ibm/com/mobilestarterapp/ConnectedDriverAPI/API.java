@@ -43,6 +43,7 @@ public class API {
     public static String connectedAppGUID = defaultAppGUID;
     public static String connectedCustomAuth = defaultCustomAuth;
 
+    // Setup all the API endpoint URLs
     public static String carsNearby = connectedAppURL + "/user/carsnearby";
     public static String reservation = connectedAppURL + "/user/reservation";
     public static String reservations = connectedAppURL + "/user/activeReservations";
@@ -61,12 +62,16 @@ public class API {
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     public static void runInAsyncUIThread(final Runnable task, final Activity activity) {
+        runInAsyncUIThread(task, activity, 0);
+    }
+
+    public static void runInAsyncUIThread(final Runnable task, final Activity activity, final long delayMs) {
         scheduler.schedule(new Runnable() {
             @Override
             public void run() {
                 activity.runOnUiThread(task);
             }
-        }, 0, TimeUnit.MILLISECONDS);
+        }, delayMs, TimeUnit.MILLISECONDS);
     }
 
 
@@ -75,6 +80,7 @@ public class API {
     }
 
     public static void setURIs(final String appURL) {
+        // Setup all the API endpoint URLs
         carsNearby = appURL + "/user/carsnearby";
         reservation = appURL + "/user/reservation";
         reservations = appURL + "/user/activeReservations";
@@ -96,6 +102,7 @@ public class API {
     }
 
     public static void doInitialize() {
+        // Use sharedpreferences to store data on the device (to not show repetitive warnings etc.)
         sharedpreferences = context.getSharedPreferences("carsharing.starter.automotive.iot.ibm.com.mobilestarterapp.ConnectedDriverAPI", Context.MODE_PRIVATE);
 
         final String appRoute = sharedpreferences.getString("appRoute", "no-appRoute");
@@ -121,13 +128,16 @@ public class API {
     }
 
     public static String getUUID() {
+        // Use sharedpreferences to store data on the device (to not show repetitive warnings etc.)
         sharedpreferences = context.getSharedPreferences("carsharing.starter.automotive.iot.ibm.com.mobilestarterapp.ConnectedDriverAPI", Context.MODE_PRIVATE);
 
+        // Check if a UUID has already been assigned to and stored on the device
         String uuidString = sharedpreferences.getString("iota-starter-uuid", "no-iota-starter-uuid");
 
+        // If there's already a UUID assigned, then just return it
         if (uuidString != "no-iota-starter-uuid") {
             return uuidString;
-        } else {
+        } else { // If not, then generate one and return
             uuidString = UUID.randomUUID().toString();
 
             sharedpreferences.edit().putString("iota-starter-uuid", uuidString).apply();
@@ -136,6 +146,7 @@ public class API {
         }
     }
 
+    // Check if the disclaimer has been shown to the user already
     public static boolean warningShown() {
         sharedpreferences = context.getSharedPreferences("carsharing.starter.automotive.iot.ibm.com.mobilestarterapp.ConnectedDriverAPI", Context.MODE_PRIVATE);
 
@@ -150,6 +161,11 @@ public class API {
         }
     }
 
+    /**
+     * @param boolean agreed - true if the user agreed, false if not
+     * @return bool - disclaimerShownAndAgreed or false
+     * @desc Checks if the disclaimer has been shown to the user already, and stores the value on the device if they agree
+     */
     public static boolean disclaimerShown(boolean agreed) {
         sharedpreferences = context.getSharedPreferences("carsharing.starter.automotive.iot.ibm.com.mobilestarterapp.ConnectedDriverAPI", Context.MODE_PRIVATE);
 
@@ -164,9 +180,11 @@ public class API {
         return false;
     }
 
+    // Custom class to make and handle http requests
     public static class doRequest extends AsyncTask<String, Void, JSONArray> {
 
         public interface TaskListener {
+            // Call the postExecute function after the request is finished
             public void postExecute(JSONArray result) throws JSONException, MqttException;
         }
 
@@ -176,14 +194,17 @@ public class API {
             this.taskListener = listener;
         }
 
+        /*
+         * @desc Async function that will execute the request
+         * @param string params -
+         *      params[0] == url (String)
+                params[1] == request type (String e.g. "GET")
+                params[2] == parameters query (Uri converted to String)
+                params[3] == body (JSONObject converted to String)
+         * @return JSONArray result - response data
+         */
         @Override
         protected JSONArray doInBackground(String... params) {
-            /*      params[0] == url (String)
-                    params[1] == request type (String e.g. "GET")
-                    params[2] == parameters query (Uri converted to String)
-                    params[3] == body (JSONObject converted to String)
-            */
-
             int code = 0;
 
             try {
@@ -193,18 +214,25 @@ public class API {
 
                 Log.i(requestType + " Request", params[0]);
 
+                // Set request header property "iota-starter-uuid" to the UUID assigned to the device
                 urlConnection.setRequestProperty("iota-starter-uuid", getUUID());
                 Log.i("Using UUID", getUUID());
 
-                urlConnection.setRequestMethod(requestType);
+                urlConnection.setRequestMethod(requestType); // GET, POST, FETCH, etc.
 
                 if (requestType == "POST" || requestType == "PUT") {
+                    // Set the DoInput flag to true if you intend to use the URL connection for input, false if not.
+                    // The default is true, but we're going to set it to True just in case anything overrides it
                     urlConnection.setDoInput(true);
+
+                    // Enable sending request body
                     urlConnection.setDoOutput(true);
 
+                    // If an HTTP Parameters Query has been set
                     if (params.length > 2 && params[2] != null) { // params[2] == HTTP Parameters Query - String
                         final String query = params[2];
 
+                        // Write the query to the outputstream for our connection object
                         final OutputStream os = urlConnection.getOutputStream();
                         final BufferedWriter writer = new BufferedWriter(
                                 new OutputStreamWriter(os, "UTF-8"));
@@ -217,6 +245,7 @@ public class API {
                         Log.i("Using Parameters:", params[2]);
                     }
 
+                    // If an HTTP body has been set
                     if (params.length > 3) { // params[3] == HTTP Body - String
                         final String httpBody = params[3];
 
@@ -233,12 +262,14 @@ public class API {
                 }
 
                 try {
+                    // Get the response code (200, 400, 500, etc.)
                     code = urlConnection.getResponseCode();
 
                     final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
                     final StringBuilder stringBuilder = new StringBuilder();
 
                     String line;
+                    // Go through every line in the bufferedReader and append the line to the stringBuilder
                     while ((line = bufferedReader.readLine()) != null) {
                         stringBuilder.append(line);
                     }
@@ -279,7 +310,7 @@ public class API {
                             return result;
                         }
                     }
-                } finally {
+                } finally { // After the task is finished, disconnect the connection
                     urlConnection.disconnect();
                 }
             } catch (Exception e) {
@@ -302,6 +333,7 @@ public class API {
             }
         }
 
+        // Execute after the task is finished
         @Override
         protected void onPostExecute(JSONArray result) {
             super.onPostExecute(result);

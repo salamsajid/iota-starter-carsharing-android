@@ -34,7 +34,7 @@ public class CarData implements Serializable {
 
             coordinate = new LatLng(lat, lng);
         }
-        name = carData.getString("name");
+        name = carData.has("name") ? carData.getString("name") : "no name";
         status = carData.has("status") ? carData.getString("status") : null;
         distance = carData.has("distance") ? carData.getInt("distance") : 0;
         license = carData.has("license") ? carData.getString("license") : null;
@@ -43,15 +43,15 @@ public class CarData implements Serializable {
         if (carData.has("model")) {
             final JSONObject model = carData.getJSONObject("model");
 
-            makeModel = model.getString("makeModel");
-            year = model.getInt("year");
-            mileage = model.getInt("mileage");
-            stars = model.getInt("stars");
-            hourlyRate = model.getInt("hourlyRate");
-            dailyRate = model.getInt("dailyRate");
-            thumbnailURL = model.getString("thumbnailURL");
-            type = model.has("type") ? model.getString("type") : null;
-            drive = model.has("drive") ? model.getString("drive") : null;
+            makeModel = model.has("makeModel") ? model.getString("makeModel") : "no model";
+            year = model.has("year") ? model.getInt("year") : 0;
+            mileage = model.has("mileage") ? model.getInt("mileage") : 0;
+            stars = model.has("stars") ? model.getInt("stars") : 0;
+            hourlyRate = model.has("hourlyRate") ? model.getInt("hourlyRate") : 0;
+            dailyRate = model.has("dailyRate") ? model.getInt("dailyRate") : 0;
+            thumbnailURL = model.has("thumbnailURL") ? model.getString("thumbnailURL") : "";
+            type = model.has("type") ? model.getString("type") : "no type";
+            drive = model.has("drive") ? model.getString("drive") : "no drive";
         }
 
 //        if let recommendation = dictionary["recommendation"] {

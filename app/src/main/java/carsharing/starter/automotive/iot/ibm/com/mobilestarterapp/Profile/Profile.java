@@ -12,6 +12,7 @@ package carsharing.starter.automotive.iot.ibm.com.mobilestarterapp.Profile;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -78,6 +79,8 @@ public class Profile extends Fragment {
                         stats.add(tempDriverStatistics);
                     }
 
+                    final FragmentActivity activity = getActivity();
+                    final ActionBar supportActionBar = ((AppCompatActivity) activity).getSupportActionBar();
                     if (stats.size() > 0) {
                         stat = stats.get(0);
                         behaviors = stat.scoring.getScoringBehaviors();
@@ -98,12 +101,12 @@ public class Profile extends Fragment {
                         trafficConditions = stat.speedPattern;
                         trafficConditions.toDictionary();
 
-                        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Your score is " + Math.round(stat.scoring.score) + "% for " + Math.round(stat.totalDistance / 16.09344) / 100 + " miles.");
+                        supportActionBar.setTitle("Your score is " + Math.round(stat.scoring.score) + "% for " + Math.round(stat.totalDistance / 16.09344) / 100 + " miles.");
 
-                        final ProfileDataAdapter adapter = new ProfileDataAdapter(getActivity().getApplicationContext(), stats, behaviors, timesOfDay, trafficConditions, roadTypes);
+                        final ProfileDataAdapter adapter = new ProfileDataAdapter(activity.getApplicationContext(), stats, behaviors, timesOfDay, trafficConditions, roadTypes);
                         listView.setAdapter(adapter);
                     } else {
-                        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("You have no analyzed trips.");
+                        supportActionBar.setTitle("You have no analyzed trips.");
                     }
 
                     Log.i("Profile Data", result.toString());
