@@ -47,6 +47,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -161,7 +162,9 @@ public class CarBrowse extends Fragment implements OnMapReadyCallback, LocationL
                         });
 
                         if (carsArray.size() == 0) {
-                            final Toast toast = Toast.makeText(activity.getApplicationContext(), "No car available in this area. Maybe Free Plan limitation and you may ask administrator to delete registered cars.", Toast.LENGTH_LONG);
+                            final Toast toast = Toast.makeText(activity.getApplicationContext(),
+                                    "No car available in this area. Location information may be incorrect. Make sure GPS or Wifi is effective and try again. Or, Free Plan limitation, ask administrator to delete registered cars.",
+                                    Toast.LENGTH_LONG);
                             toast.show();
                             supportActionBar.setTitle("No car available.");
                         } else {
@@ -255,7 +258,7 @@ public class CarBrowse extends Fragment implements OnMapReadyCallback, LocationL
 
     @Override
     public void onLocationChanged(final Location location) {
-        Log.i("Location Data", "New Location - " + location.getLatitude() + ", " + location.getLongitude());
+        // Log.i("Location Data", "On Location Change - " + location.getLatitude() + ", " + location.getLongitude());
     }
 
     @Override
@@ -315,14 +318,27 @@ public class CarBrowse extends Fragment implements OnMapReadyCallback, LocationL
                         return;
                     }
 
-                    final Location lastKnown = locationManager.getLastKnownLocation(provider);
+                    final Location suggestedLocation = locationManager.getLastKnownLocation(provider);
 
-                    if (lastKnown == null) {
+                    if (suggestedLocation == null) {
                         continue;
                     }
+                    Log.i("Location Provider",
+                            "provider=" + suggestedLocation.getProvider()
+                                    + " time=" + new SimpleDateFormat("yyyy MMM dd HH:mm:ss").format(suggestedLocation.getTime())
+                                    + " accuracy=" + suggestedLocation.getAccuracy()
+                                    + " lat=" + suggestedLocation.getLatitude()
+                                    + " lng=" + suggestedLocation.getLongitude()
+                    );
 
-                    if (finalLocation == null || (lastKnown.getAccuracy() < finalLocation.getAccuracy())) {
-                        finalLocation = lastKnown;
+                    if (finalLocation == null) {
+                        finalLocation = suggestedLocation;
+                    } else if (suggestedLocation.getTime() - finalLocation.getTime() > 1000) {
+                        // drop more than 1000ms old data
+                        finalLocation = suggestedLocation;
+                    } else if (suggestedLocation.getAccuracy() < finalLocation.getAccuracy()) {
+                        // picks more acculate one
+                        finalLocation = suggestedLocation;
                     }
                 }
 
