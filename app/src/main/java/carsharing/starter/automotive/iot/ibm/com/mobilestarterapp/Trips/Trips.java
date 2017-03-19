@@ -12,6 +12,7 @@ package carsharing.starter.automotive.iot.ibm.com.mobilestarterapp.Trips;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -45,12 +46,12 @@ public class Trips extends Fragment {
         view = inflater.inflate(R.layout.activity_trips, container, false);
         final AppCompatActivity activity = (AppCompatActivity) getActivity();
         activity.getSupportActionBar().setTitle("Fetching trips...");
-        API.runInAsyncUIThread(new Runnable(){
+        API.runInAsyncUIThread(new Runnable() {
             @Override
             public void run() {
                 getTrips();
             }
-        },activity);
+        }, activity);
         return view;
     }
 
@@ -86,7 +87,11 @@ public class Trips extends Fragment {
                         }
                     });
 
-                    final TripsDataAdapter adapter = new TripsDataAdapter(getActivity().getApplicationContext(), tripsArray);
+                    final FragmentActivity activity = getActivity();
+                    if (activity == null) {
+                        return;
+                    }
+                    final TripsDataAdapter adapter = new TripsDataAdapter(activity.getApplicationContext(), tripsArray);
                     listView.setAdapter(adapter);
 
                     final ArrayList<TripData> finalTripArray = tripsArray;
@@ -103,7 +108,7 @@ public class Trips extends Fragment {
                         }
                     });
 
-                    final ActionBar supportActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+                    final ActionBar supportActionBar = ((AppCompatActivity) activity).getSupportActionBar();
                     switch (tripsArray.size()) {
                         case 0:
                             supportActionBar.setTitle("You have no trips.");

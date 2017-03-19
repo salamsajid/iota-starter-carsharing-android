@@ -101,6 +101,8 @@ public class AnalyzeMyDriving extends Fragment implements OnMapReadyCallback, Lo
     private String speedMessage = "SPEED";
     private int transmissionCount = 0;
 
+    private static boolean currentLocationRecognized = false;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.activity_analyze_my_driving, container, false);
@@ -284,7 +286,13 @@ public class AnalyzeMyDriving extends Fragment implements OnMapReadyCallback, Lo
         }
 
         if (request && locationManager != null) {
-            locationManager.requestLocationUpdates(provider, 2000, 1.0f, this);
+            if (currentLocationRecognized == false) {
+                // to get location refreshed as soon as possible
+                locationManager.requestLocationUpdates(provider, 100, 0.1f, this);
+                currentLocationRecognized = true;
+            } else {
+                locationManager.requestLocationUpdates(provider, 2000, 0.5f, this);
+            }
         }
     }
 

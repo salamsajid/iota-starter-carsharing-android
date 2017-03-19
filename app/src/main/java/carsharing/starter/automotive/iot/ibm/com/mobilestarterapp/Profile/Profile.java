@@ -80,6 +80,9 @@ public class Profile extends Fragment {
                     }
 
                     final FragmentActivity activity = getActivity();
+                    if (activity == null) {
+                        return;
+                    }
                     final ActionBar supportActionBar = ((AppCompatActivity) activity).getSupportActionBar();
                     if (stats.size() > 0) {
                         stat = stats.get(0);

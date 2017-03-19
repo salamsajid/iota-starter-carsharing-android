@@ -91,6 +91,8 @@ public class CarBrowse extends Fragment implements OnMapReadyCallback, LocationL
 
     private boolean networkIntentNeeded = false;
 
+    private static boolean currentLocationRecognized = false;
+
     static private Location simulatedLocation = null;
 
     @Override
@@ -119,9 +121,16 @@ public class CarBrowse extends Fragment implements OnMapReadyCallback, LocationL
                     result.remove(result.length() - 1);
 
                     final FragmentActivity activity = getActivity();
+                    if (activity == null) {
+                        return;
+                    }
                     final ActionBar supportActionBar = ((AppCompatActivity) activity).getSupportActionBar();
                     if (statusCode == 200) {
-                        final ListView listView = (ListView) getView().findViewById(R.id.listView);
+                        final View view = getView();
+                        if (view == null) {
+                            return;
+                        }
+                        final ListView listView = (ListView) view.findViewById(R.id.listView);
 
                         final ArrayList<CarData> carsArray = new ArrayList<CarData>();
 
@@ -237,28 +246,47 @@ public class CarBrowse extends Fragment implements OnMapReadyCallback, LocationL
     @Override
     public void onResume() {
         super.onResume();
-        if (ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
 
-        locationManager.requestLocationUpdates(provider, 2000, 1.0f, this);
+        if (currentLocationRecognized == false) {
+            // to get location refreshed as soon as possible
+            requestLocationUpdates(100, 0.1f);
+        } else {
+            requestLocationUpdates(2000, 0.5f);
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
 
-        locationManager.removeUpdates(this);
-        if (ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
+        if (locationManager != null) {
+            locationManager.removeUpdates(this);
         }
     }
 
     @Override
     public void onLocationChanged(final Location location) {
         // Log.i("Location Data", "On Location Change - " + location.getLatitude() + ", " + location.getLongitude());
+        if (currentLocationRecognized == false) {
+            requestLocationUpdates(2000, 0.5f);
+            currentLocationRecognized = true;
+        }
+    }
+
+    private void requestLocationUpdates(final long minTime, final float minDistance) {
+        final FragmentActivity activity = getActivity();
+        if (activity == null) {
+            return;
+        }
+        if (ActivityCompat.checkSelfPermission(activity.getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(activity.getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        if (locationManager != null) {
+            locationManager.removeUpdates(this);
+            locationManager.requestLocationUpdates(provider, minTime, minDistance, this);
+            Log.i("Location Data", "requestLocationUpdates: minTime=" + minTime + " minDistance=" + minDistance);
+        }
     }
 
     @Override
@@ -299,22 +327,26 @@ public class CarBrowse extends Fragment implements OnMapReadyCallback, LocationL
     }
 
     private void getAccurateLocation2(final GoogleMap googleMap) {
-        final ConnectivityManager connectivityManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        final FragmentActivity activity = getActivity();
+        if (activity == null) {
+            return;
+        }
+        final ConnectivityManager connectivityManager = (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
         final NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
 
         if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) && (networkInfo != null && networkInfo.isConnected())) {
             if (simulatedLocation == null) {
-                if (ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.checkSelfPermission(activity.getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(activity.getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                     return;
                 }
 
-                locationManager = (LocationManager) getActivity().getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+                locationManager = (LocationManager) activity.getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
 
                 final List<String> providers = locationManager.getProviders(true);
                 Location finalLocation = null;
 
                 for (String provider : providers) {
-                    if (ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    if (ActivityCompat.checkSelfPermission(activity.getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(activity.getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                         return;
                     }
 
@@ -363,7 +395,7 @@ public class CarBrowse extends Fragment implements OnMapReadyCallback, LocationL
             }
         } else {
             if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                Toast.makeText(getActivity().getApplicationContext(), "Please turn on your GPS", Toast.LENGTH_LONG).show();
+                Toast.makeText(activity.getApplicationContext(), "Please turn on your GPS", Toast.LENGTH_LONG).show();
 
                 final Intent gpsIntent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                 startActivityForResult(gpsIntent, GPS_INTENT);
@@ -373,7 +405,7 @@ public class CarBrowse extends Fragment implements OnMapReadyCallback, LocationL
                 }
             } else {
                 if (networkInfo == null) {
-                    Toast.makeText(getActivity().getApplicationContext(), "Please turn on Mobile Data or WIFI", Toast.LENGTH_LONG).show();
+                    Toast.makeText(activity.getApplicationContext(), "Please turn on Mobile Data or WIFI", Toast.LENGTH_LONG).show();
 
                     final Intent settingsIntent = new Intent(Settings.ACTION_SETTINGS);
                     startActivityForResult(settingsIntent, SETTINGS_INTENT);

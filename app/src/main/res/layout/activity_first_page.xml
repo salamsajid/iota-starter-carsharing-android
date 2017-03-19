@@ -92,7 +92,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Version: 1.3.0 Build: 20170315"
+        android:text="Version: 1.3.0 Build: 20170318"
         android:id="@+id/textView3"
         android:textColor="#fff"
         android:textSize="16sp"

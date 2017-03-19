@@ -97,8 +97,13 @@ public class Reservations extends Fragment {
     }
 
     public void setContent(final ArrayList<ReservationsData> reservationsArray) {
+        final FragmentActivity activity = getActivity();
+        if (activity == null) {
+            return;
+        }
         final ListView listView = (ListView) view.findViewById(R.id.listView);
-        final ReservationsDataAdapter adapter = new ReservationsDataAdapter(getActivity().getApplicationContext(), reservationsArray);
+
+        final ReservationsDataAdapter adapter = new ReservationsDataAdapter(activity.getApplicationContext(), reservationsArray);
         listView.setAdapter(adapter);
 
         final ArrayList<ReservationsData> finalReservationsArray = reservationsArray;
@@ -115,7 +120,7 @@ public class Reservations extends Fragment {
             }
         });
 
-        final ActionBar supportActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+        final ActionBar supportActionBar = ((AppCompatActivity) activity).getSupportActionBar();
         switch (reservations.size()) {
             case 0:
                 supportActionBar.setTitle("You have no reservations.");
