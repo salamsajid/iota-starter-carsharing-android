@@ -45,16 +45,12 @@ To try the IoT for Automotive - Mobility Starter Application mobile app for Andr
      
     ![Gradle Sync Dialog](GradleSync.jpg)    
      
-    If you encounter the following dialog, do NOT 'Update'.    
- 
-    ![Gradle Plugin Update Dialog](GradlePluginUpdate.jpg)    
-
 3. Edit the **iota-starter-carsharing-android/app/java/carsharing.starter.automotive.iot.ibm.com.mobilestarterapp/ConnectedDriverAPI/API.java** file, and set the `connectedAppURL` variable to the URL for your IoT for Automotive - Mobility Starter Application server app.
 4. Edit the **iota-starter-carsharing-android/app/res/values/google_maps_api.xml** file and replace `YOUR_KEY_HERE` with your `google_maps_key`. For more information, see [Get API Key](https://developers.google.com/maps/documentation/android-api/signup).
 
 5. In Android Studio, run the application by pressing **Run 'app'**.
 
-    If you use a virtual device, make sure that you use one with API level 21 as seen in the following dialog.
+    If you use a virtual device, make sure that you use one with API level 21 or later as seen in the following dialog.
 
     ![Deployment Target](DeploymentTarget.jpg)
 
