@@ -2,7 +2,7 @@
 
 
 ## Overview
-The IBM IoT for Automotive - Mobility Starter Application uses the **Context Mapping** and **Driver Behavior** services that are available on **IBM Bluemix** to help you to quickly build a smart car-sharing automotive solution. The IBM IoT for Automotive - Mobility Starter Application consists of a mobile app and a server component.
+The IBM IoT for Automotive - Mobility Starter Application uses the **Context Mapping** and **Driver Behavior** services that are available on **IBM Cloud** to help you to quickly build a smart car-sharing automotive solution. The IBM IoT for Automotive - Mobility Starter Application consists of a mobile app and a server component.
 
 ### Mobile app
 The starter app provides a mobile app for customers to quickly find and hire a car without human intervention from a car-hire company. If you are a customer who wants to hire a car, you can use the mobile app to do the following tasks:
@@ -17,7 +17,7 @@ While you drive the car, the service tracks your location and also records your 
 You can download and install the mobile app on iOS and Android mobile devices. For more information about deploying the iOS version of the mobile app, see [IBM IoT for Automotive - Mobility Starter Application mobile app for iOS](https://github.com/ibm-watson-iot/iota-starter-carsharing/blob/master/README.md).
 
 ### Server component
-The IoT for Automotive - Mobility Starter Application mobile app interacts with the server component. The server component provides the back-end car sharing and system monitoring service that provides more features for car-hire companies. By default, the mobile app connects to a test server that is provided by IBM. You can also choose to deploy your own server instance to IBM Bluemix and connect your mobile app to that instance instead of the test system. For more information about deploying the car-sharing server component, see [ibm-watson-iot/iota-starter-server](https://github.com/ibm-watson-iot/iota-starter-server).
+The IoT for Automotive - Mobility Starter Application mobile app interacts with the server component. The server component provides the back-end car sharing and system monitoring service that provides more features for car-hire companies. By default, the mobile app connects to a test server that is provided by IBM. You can also choose to deploy your own server instance to IBM Cloud and connect your mobile app to that instance instead of the test system. For more information about deploying the car-sharing server component, see [ibm-watson-iot/iota-starter-server](https://github.com/ibm-watson-iot/iota-starter-server).
 
 
 ## Prerequisites
@@ -60,7 +60,7 @@ To try the IoT for Automotive - Mobility Starter Application mobile app for Andr
 To report a defect with the IoT for Automotive - Mobility Starter Application mobile app, go to the [Issues](https://github.com/ibm-watson-iot/iota-starter-carsharing-android/issues) section.
 
 ## Privacy notice
-The IoT for Automotive - Mobility Starter Application on Bluemix stores all of the driving data that is obtained while you use the mobile app.
+The IoT for Automotive - Mobility Starter Application on IBM Cloud stores all of the driving data that is obtained while you use the mobile app.
 
 ## Questions, comments or suggestions
 For your questions, comments or suggestions to us, visit [Watson IoT for Automotive Application community site] (https://www.ibm.com/developerworks/community/groups/service/html/communitystart?communityUuid=3b06ca1c-fd7c-4a59-a888-e5e3a8384091).
@@ -71,6 +71,6 @@ For your questions, comments or suggestions to us, visit [Watson IoT for Automot
 - [IBM Watson Internet of Things](http://www.ibm.com/internet-of-things/)  
 - [IBM Watson IoT Platform](http://www.ibm.com/internet-of-things/iot-solutions/watson-iot-platform/)   
 - [IBM Watson IoT Platform Developers Community](https://developer.ibm.com/iotplatform/)
-- [IBM Bluemix](https://bluemix.net/)  
-- [IBM Bluemix documentation](https://www.ng.bluemix.net/docs/)  
-- [IBM Bluemix developers community](http://developer.ibm.com/bluemix) 
+- [IBM Cloud](https://bluemix.net/)  
+- [IBM Cloud documentation](https://www.ng.bluemix.net/docs/)  
+- [IBM Cloud developers community](http://developer.ibm.com/bluemix) 
