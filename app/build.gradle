@@ -8,8 +8,8 @@ android {
         applicationId "carsharing.starter.automotive.iot.ibm.com.mobilestarterapp"
         minSdkVersion 21
         targetSdkVersion 24
-        versionCode 1
-        versionName "1.0"
+        versionCode 10
+        versionName "1.3.7"
         multiDexEnabled true
     }
 
@@ -28,6 +28,12 @@ android {
 repositories {
     maven {
         url "https://repo.eclipse.org/content/repositories/paho-releases/"
+    }
+}
+configurations{
+    all{
+        exclude module: 'httpclient'
+        exclude module: 'commons-logging'
     }
 }
 

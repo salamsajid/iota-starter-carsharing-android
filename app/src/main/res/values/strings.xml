@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">IBM IoT for Automotive - Mobility Starter Application</string>
+    <string name="app_name">IBM IoT Connected Vehicle Insights - Mobility Starter Application</string>
     <string name="title_activity_analyze_my_driving">Map</string>
     <string name="title_activity_maps">Map</string>
     <string name="title_activity_tab_acitivity">tabAcitivity</string>

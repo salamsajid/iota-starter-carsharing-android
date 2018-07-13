@@ -26,7 +26,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="After instantiating the &quot;IBM IoT for Automotive&quot; boilerplate, tap the QR code button below to scan the QR code from your application&apos;s home page."
+        android:text="After instantiating the &quot;IBM IoT Connected Vehicle Insights - Mobility Starter Application server&quot;, tap the QR code button below to scan the QR code from your application&apos;s home page."
         android:id="@+id/textView4"
         android:onClick="useDefaultServer"
         android:textSize="14dp"
